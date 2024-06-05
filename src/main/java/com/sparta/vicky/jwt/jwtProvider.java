@@ -15,7 +15,7 @@ import java.util.Date;
 
 @Slf4j
 @Component
-public class jwtUtil {
+public class jwtProvider {
     // Header KEY 값
     public static final String AUTHORIZATION_ACCESS_HEADER = "Authorization_Access";
     public static final String AUTHORIZATION_REFRESH_HEADER = "Authorization_Refresh";
@@ -38,12 +38,12 @@ public class jwtUtil {
         Date date = new Date();
 
         // 60분 토큰 만료시간
-        long ACCESS_TOKEN_TIME = 60 * 60 * 1000L;
+        long ACCESS_TOKEN_TIME = 30 * 60 * 1000L;
 
         return BEARER_PREFIX +
                 Jwts.builder()
                         .setSubject(username) // 사용자 식별자값(ID)
-                        .setExpiration(new Date(date.getTime() + ACCESS_TOKEN_TIME)) // 만료 시간
+                        .setExpiration(new Date(date.getTime() + ACCESS_TOKEN_TIME)) // Access 토큰 만료 시간(30분)
                         .setIssuedAt(date) // 발급일
                         .signWith(key, signatureAlgorithm) // 암호화 알고리즘
                         .compact();
@@ -54,12 +54,12 @@ public class jwtUtil {
         Date date = new Date();
 
         //토큰 만료시간 일주일
-        long REFRESH_TOKEN_TIME = 7 * 60 * 60 * 60 * 1000L;
+        long REFRESH_TOKEN_TIME = 14 * 60 * 60 * 60 * 1000L;
 
         return BEARER_PREFIX +
                 Jwts.builder()
                         .setSubject(username) // 사용자 식별자값(ID)
-                        .setExpiration(new Date(date.getTime() + REFRESH_TOKEN_TIME))// 만료시간 하루
+                        .setExpiration(new Date(date.getTime() + REFRESH_TOKEN_TIME))// Refresh 토큰 만료시간(2주)
                         .setIssuedAt(date) // 발급일
                         .signWith(key, signatureAlgorithm) // 암호화 알고리즘
                         .compact();
