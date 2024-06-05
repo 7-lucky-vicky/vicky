@@ -16,19 +16,19 @@ import java.util.Date;
 @Slf4j
 @Component
 public class jwtProvider {
-    
+
     // Header KEY 값
     public static final String AUTHORIZATION_ACCESS_HEADER = "Authorization_Access";
     public static final String AUTHORIZATION_REFRESH_HEADER = "Authorization_Refresh";
-    
+
     // Token 식별자
     public static final String BEARER_PREFIX = "Bearer ";
 
     @Value("${jwt.secret.key}") // Base64 Encode 한 SecretKey
     private String secretKey;
-    
+
     private Key key;
-    
+
     private final SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;
 
     @PostConstruct
