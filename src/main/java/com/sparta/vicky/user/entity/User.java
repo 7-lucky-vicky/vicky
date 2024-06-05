@@ -3,6 +3,7 @@ package com.sparta.vicky.user.entity;
 import com.sparta.vicky.baseEntity.Timestamped;
 import com.sparta.vicky.user.dto.SignupRequestDto;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
@@ -12,7 +13,7 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @Table(name = "user")
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class User extends Timestamped {
 
     @Id
