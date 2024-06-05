@@ -1,7 +1,7 @@
 ---
 name: Bug report
 about: 버그 리포트 이슈 템플릿
-title: "[BUG]"
+title: "[BUG] "
 labels: ''
 assignees: Cherryshine, hangeunhyeong, HwangTaeGyeong, momoysm, uh1205
 
