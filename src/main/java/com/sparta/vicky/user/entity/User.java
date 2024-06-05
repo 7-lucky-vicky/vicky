@@ -9,6 +9,7 @@ import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDateTime;
 
+@Entity
 @Getter
 @Table(name = "user")
 @NoArgsConstructor
