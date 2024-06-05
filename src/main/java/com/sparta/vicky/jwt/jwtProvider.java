@@ -16,15 +16,19 @@ import java.util.Date;
 @Slf4j
 @Component
 public class jwtProvider {
+    
     // Header KEY 값
     public static final String AUTHORIZATION_ACCESS_HEADER = "Authorization_Access";
     public static final String AUTHORIZATION_REFRESH_HEADER = "Authorization_Refresh";
+    
     // Token 식별자
     public static final String BEARER_PREFIX = "Bearer ";
 
     @Value("${jwt.secret.key}") // Base64 Encode 한 SecretKey
     private String secretKey;
+    
     private Key key;
+    
     private final SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;
 
     @PostConstruct
@@ -37,13 +41,13 @@ public class jwtProvider {
     public String createAccessToken(String username) {
         Date date = new Date();
 
-        // 60분 토큰 만료시간
+        // Access 토큰 만료기간 (30분)
         long ACCESS_TOKEN_TIME = 30 * 60 * 1000L;
 
         return BEARER_PREFIX +
                 Jwts.builder()
                         .setSubject(username) // 사용자 식별자값(ID)
-                        .setExpiration(new Date(date.getTime() + ACCESS_TOKEN_TIME)) // Access 토큰 만료 시간(30분)
+                        .setExpiration(new Date(date.getTime() + ACCESS_TOKEN_TIME)) // Access 토큰 만료기간 (30분)
                         .setIssuedAt(date) // 발급일
                         .signWith(key, signatureAlgorithm) // 암호화 알고리즘
                         .compact();
@@ -53,13 +57,13 @@ public class jwtProvider {
     public String createRefreshToken(String username) {
         Date date = new Date();
 
-        //토큰 만료시간 일주일
-        long REFRESH_TOKEN_TIME = 14 * 60 * 60 * 60 * 1000L;
+        // Refresh 토큰 만료기간 (2주)
+        long REFRESH_TOKEN_TIME = 14 * 24 * 60 * 60 * 1000L;
 
         return BEARER_PREFIX +
                 Jwts.builder()
                         .setSubject(username) // 사용자 식별자값(ID)
-                        .setExpiration(new Date(date.getTime() + REFRESH_TOKEN_TIME))// Refresh 토큰 만료시간(2주)
+                        .setExpiration(new Date(date.getTime() + REFRESH_TOKEN_TIME)) // Refresh 토큰 만료기간 (2주)
                         .setIssuedAt(date) // 발급일
                         .signWith(key, signatureAlgorithm) // 암호화 알고리즘
                         .compact();
