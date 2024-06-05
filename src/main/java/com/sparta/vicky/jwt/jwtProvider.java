@@ -81,7 +81,7 @@ public class jwtProvider {
     // header 에서 refreshToken 가져오기
     public String getRefreshTokenFromHeader(HttpServletRequest request) {
         String bearerToken = request.getHeader(AUTHORIZATION_REFRESH_HEADER);
-        if(StringUtils.hasText(bearerToken) && bearerToken.startsWith(BEARER_PREFIX)){
+        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(BEARER_PREFIX)) {
             return bearerToken.substring(7);
         }
         return null;
@@ -92,7 +92,7 @@ public class jwtProvider {
         try {
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
             return true;
-        } catch (SecurityException | MalformedJwtException | SignatureException e) {
+        } catch (SecurityException | MalformedJwtException e) {
             log.error("유효하지 않는 JWT 서명 입니다.");
         } catch (ExpiredJwtException e) {
             log.error("만료된 JWT token 입니다.");
