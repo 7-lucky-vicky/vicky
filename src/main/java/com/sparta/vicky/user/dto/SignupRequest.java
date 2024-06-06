@@ -8,7 +8,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class SignupRequestDto {
+public class SignupRequest {
     //회원가입RequestDto
     @NotBlank(message = "아이디를 입력하세요.")
     @Size(min=10, max=20, message="아이디는 10자에서 20자 사이입니다.")
