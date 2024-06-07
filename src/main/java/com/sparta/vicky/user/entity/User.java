@@ -1,7 +1,7 @@
 package com.sparta.vicky.user.entity;
 
 import com.sparta.vicky.baseEntity.Timestamped;
-import com.sparta.vicky.user.dto.SignupRequestDto;
+import com.sparta.vicky.user.dto.SignupRequest;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -12,7 +12,6 @@ import java.time.LocalDateTime;
 
 @Entity
 @Getter
-@Table(name = "user")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class User extends Timestamped {
 
@@ -45,7 +44,7 @@ public class User extends Timestamped {
     @Column(nullable = false)
     private LocalDateTime statusUpdatedAt;
 
-    public User(SignupRequestDto requestDto) {
+    public User(SignupRequest requestDto) {
         this.username = requestDto.getUsername();
         this.password = requestDto.getPassword();
         this.name = requestDto.getName();
