@@ -66,9 +66,9 @@ public class BoardController {
     /**
      * 특정 사용자의 전체 게시물 조회
      */
-    @GetMapping("/{userId}")
+    @GetMapping
     public ResponseEntity<CommonResponse<?>> getUserBoards(
-            @PathVariable Long userId
+            @RequestParam Long userId
     ) {
         try {
             List<BoardResponse> response = boardService.getUserBoards(userId).stream()
