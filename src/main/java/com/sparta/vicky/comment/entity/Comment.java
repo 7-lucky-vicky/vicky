@@ -4,12 +4,13 @@ import com.sparta.vicky.baseEntity.Timestamped;
 import com.sparta.vicky.comment.dto.CommentRequest;
 import com.sparta.vicky.user.entity.User;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Comment extends Timestamped {
 
     @Id
@@ -29,7 +30,7 @@ public class Comment extends Timestamped {
     private Board board;
 
     @@Column(nullable = false)
-    private Long likes;
+    private int likes;
 
     /**
      * 생성자
@@ -44,6 +45,7 @@ public class Comment extends Timestamped {
 
     private Comment(String content) {
         this.content = content;
+        this.likes = 0;
     }
 
     /**
@@ -56,7 +58,7 @@ public class Comment extends Timestamped {
 
     public void setBoard(Board board) {
         this.board = board;
-        schedule.addComment(this);
+        board.addComment(this);
     }
 
     /**
@@ -64,7 +66,7 @@ public class Comment extends Timestamped {
      */
     public void verify(Long boardId) {
         if (!this.board.getId().equals(boardId)) {
-            throw new IllegalArgumentException("Schedule does not belong to this comment");
+            throw new IllegalArgumentException("Board does not belong to this comment");
         }
     }
 

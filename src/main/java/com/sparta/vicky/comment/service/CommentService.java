@@ -32,8 +32,8 @@ public class CommentService {
     /**
      * 해당 일정의 모든 댓글 조회
      */
-    public List<Comment> getComments(Long boardId) {
-        return commentRepository.findAllByScheduleIdOrderByCreatedDate(boardId);
+    public List<Comment> getAllComments(Long boardId) {
+        return commentRepository.findAllByBoardIdOrderByCreatedDate(boardId);
     }
 
     /**

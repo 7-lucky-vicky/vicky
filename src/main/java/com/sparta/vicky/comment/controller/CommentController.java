@@ -56,10 +56,10 @@ public class CommentController {
      * 모든 댓글 조회
      */
     @GetMapping
-    public ResponseEntity<CommonResponse<?>> getComments(
+    public ResponseEntity<CommonResponse<?>> getAllComments(
             @PathVariable Long boardId
     ) {
-        List<CommentResponse> response = commentService.getComments(boardId)
+        List<CommentResponse> response = commentService.getAllComments(boardId)
                 .stream().map(CommentResponse::new).toList();
 
         return getResponseEntity(response, "Retrieved all comments successfully");
@@ -132,7 +132,7 @@ public class CommentController {
     }
 
     /**
-     * PathVariable scheduleId가 RequestBody scheduleId와 같은지 검증
+     * 'PathVariable boardId' 가 'RequestBody 'boardId' 와 같은지 검증
      */
     private static void verifyPathVariable(Long boardId, CommentRequest request) {
         if (!Objects.equals(boardId, request.getBoardId())) {
