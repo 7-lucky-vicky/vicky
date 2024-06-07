@@ -1,5 +1,7 @@
 package com.sparta.vicky.comment.service;
 
+import com.sparta.vicky.board.entity.Board;
+import com.sparta.vicky.board.service.BoardService;
 import com.sparta.vicky.comment.Repository.CommentRepository;
 import com.sparta.vicky.comment.dto.CommentRequest;
 import com.sparta.vicky.comment.entity.Comment;
@@ -11,15 +13,15 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
-@Transactional(readOnly = true)
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class CommentService {
 
     private final BoardService boardService;
     private final CommentRepository commentRepository;
 
     /**
-     * 해당 일정에 새로운 댓글 추가
+     * 댓글 작성
      */
     @Transactional
     public Comment createComment(CommentRequest request, User user) {
@@ -30,19 +32,18 @@ public class CommentService {
     }
 
     /**
-     * 해당 일정의 모든 댓글 조회
+     * 특정 게시물의 전체 댓글 조회
      */
     public List<Comment> getAllComments(Long boardId) {
         return commentRepository.findAllByBoardIdOrderByCreatedDate(boardId);
     }
 
     /**
-     * 댓글 조회
+     * 특정 댓글 조회
      */
     public Comment getComment(Long boardId, Long commentId) {
         Comment comment = commentRepository.findById(commentId).orElseThrow(() ->
-                new IllegalArgumentException("Comment with id " + commentId + " does not exist")
-        );
+                new IllegalArgumentException("commentId " + commentId + " 에 해당하는 댓글이 존재하지 않습니다."));
         comment.verify(boardId);
 
         return comment;

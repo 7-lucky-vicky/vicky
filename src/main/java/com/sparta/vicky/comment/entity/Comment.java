@@ -1,7 +1,8 @@
 package com.sparta.vicky.comment.entity;
 
-import com.sparta.vicky.baseEntity.Timestamped;
+import com.sparta.vicky.board.entity.Board;
 import com.sparta.vicky.comment.dto.CommentRequest;
+import com.sparta.vicky.common.entity.Timestamped;
 import com.sparta.vicky.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -29,7 +30,7 @@ public class Comment extends Timestamped {
     @JoinColumn(name = "board_id")
     private Board board;
 
-    @@Column(nullable = false)
+    @Column(nullable = false)
     private int likes;
 
     /**
@@ -66,13 +67,13 @@ public class Comment extends Timestamped {
      */
     public void verify(Long boardId) {
         if (!this.board.getId().equals(boardId)) {
-            throw new IllegalArgumentException("Board does not belong to this comment");
+            throw new IllegalArgumentException("해당 댓글의 게시물이 아닙니다.");
         }
     }
 
     public void verify(User user) {
         if (!this.user.equals(user)) {
-            throw new IllegalArgumentException("User does not belong to this comment");
+            throw new IllegalArgumentException("해당 댓글의 작성자가 아닙니다.");
         }
     }
 
@@ -82,4 +83,5 @@ public class Comment extends Timestamped {
     public void update(CommentRequest request) {
         this.content = request.getContent();
     }
+
 }
