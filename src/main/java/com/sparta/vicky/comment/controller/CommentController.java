@@ -30,7 +30,7 @@ public class CommentController {
      */
     @PostMapping
     public ResponseEntity<CommonResponse<?>> createComment(
-            @PathVariable Long scheduleId,
+            @PathVariable Long boardId,
             @Valid @RequestBody CommentRequest request,
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             BindingResult bindingResult
@@ -40,7 +40,7 @@ public class CommentController {
             return getFieldErrorResponseEntity(bindingResult, "Failed to create comment");
         }
         try {
-            verifyPathVariable(scheduleId, request);
+            verifyPathVariable(boardId, request);
 
             Comment comment = commentService.createComment(request, userDetails.getUser());
             CommentResponse response = new CommentResponse(comment);
@@ -57,9 +57,9 @@ public class CommentController {
      */
     @GetMapping
     public ResponseEntity<CommonResponse<?>> getComments(
-            @PathVariable Long scheduleId
+            @PathVariable Long boardId
     ) {
-        List<CommentResponse> response = commentService.getComments(scheduleId)
+        List<CommentResponse> response = commentService.getComments(boardId)
                 .stream().map(CommentResponse::new).toList();
 
         return getResponseEntity(response, "Retrieved all comments successfully");
@@ -70,11 +70,11 @@ public class CommentController {
      */
     @GetMapping("/{commentId}")
     public ResponseEntity<CommonResponse<?>> getComment(
-            @PathVariable Long scheduleId,
+            @PathVariable Long boardId,
             @PathVariable Long commentId
     ) throws IllegalArgumentException {
         try {
-            Comment comment = commentService.getComment(scheduleId, commentId);
+            Comment comment = commentService.getComment(boardId, commentId);
             CommentResponse response = new CommentResponse(comment);
 
             return getResponseEntity(response, "Retrieved comment successfully");
@@ -89,7 +89,7 @@ public class CommentController {
      */
     @PutMapping("/{commentId}")
     public ResponseEntity<CommonResponse<?>> updateComment(
-            @PathVariable Long scheduleId,
+            @PathVariable Long boardId,
             @PathVariable Long commentId,
             @Valid @RequestBody CommentRequest request,
             @AuthenticationPrincipal UserDetailsImpl userDetails,
@@ -100,9 +100,9 @@ public class CommentController {
             return getFieldErrorResponseEntity(bindingResult, "Failed to update comment");
         }
         try {
-            verifyPathVariable(scheduleId, request);
+            verifyPathVariable(boardId, request);
 
-            Comment comment = commentService.updateComment(scheduleId, commentId, request, userDetails.getUser());
+            Comment comment = commentService.updateComment(boardId, commentId, request, userDetails.getUser());
             CommentResponse response = new CommentResponse(comment);
 
             return getResponseEntity(response, "Comment updated successfully");
