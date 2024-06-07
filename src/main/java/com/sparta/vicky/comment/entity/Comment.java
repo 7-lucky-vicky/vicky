@@ -2,21 +2,21 @@ package com.sparta.vicky.comment.entity;
 
 import com.sparta.vicky.board.entity.Board;
 import com.sparta.vicky.comment.dto.CommentRequest;
-import com.sparta.vicky.common.entity.Timestamped;
 import com.sparta.vicky.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Comment extends Timestamped {
+public class Comment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "comment_id")
     private Long id;
 
     @Column(nullable = false)
@@ -33,6 +33,12 @@ public class Comment extends Timestamped {
     @Column(nullable = false)
     private int likes;
 
+    @Column(nullable = false)
+    private LocalDateTime createdAt;
+
+    @Column(nullable = false)
+    private LocalDateTime updatedAt;
+
     /**
      * 생성자
      */
@@ -47,6 +53,8 @@ public class Comment extends Timestamped {
     private Comment(String content) {
         this.content = content;
         this.likes = 0;
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
     }
 
     /**
@@ -65,13 +73,13 @@ public class Comment extends Timestamped {
     /**
      * 검증 메서드
      */
-    public void verify(Long boardId) {
+    public void verifyBoard(Long boardId) {
         if (!this.board.getId().equals(boardId)) {
             throw new IllegalArgumentException("해당 댓글의 게시물이 아닙니다.");
         }
     }
 
-    public void verify(User user) {
+    public void verifyUser(User user) {
         if (!this.user.equals(user)) {
             throw new IllegalArgumentException("해당 댓글의 작성자가 아닙니다.");
         }

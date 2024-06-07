@@ -121,7 +121,6 @@ public class CommentController {
     ) {
         try {
             Long response = commentService.deleteComment(boardId, commentId, userDetails.getUser());
-
             return getResponseEntity(response, "댓글 삭제 성공");
 
         } catch (Exception e) {
