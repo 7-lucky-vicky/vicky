@@ -1,5 +1,6 @@
 package com.sparta.vicky.jwt;
 
+import com.sparta.vicky.user.service.UserService;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
@@ -15,7 +16,9 @@ import java.util.Date;
 
 @Slf4j
 @Component
-public class jwtProvider {
+public class JwtProvider {
+
+    private final UserService userService;
 
     // Header KEY 값
     public static final String AUTHORIZATION_ACCESS_HEADER = "Authorization_Access";
@@ -30,6 +33,10 @@ public class jwtProvider {
     private Key key;
 
     private final SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;
+
+    public JwtProvider(UserService userService) {
+        this.userService = userService;
+    }
 
     @PostConstruct
     public void init() {
@@ -65,7 +72,8 @@ public class jwtProvider {
                         .setSubject(username) // 사용자 식별자값(ID)
                         .setExpiration(new Date(date.getTime() + REFRESH_TOKEN_TIME)) // Refresh 토큰 만료기간 (2주)
                         .setIssuedAt(date) // 발급일
-                        .signWith(key, signatureAlgorithm) // 암호화 알고리즘
+                        .signWith(key, signatureAlgorithm) //
+                        // 암호화 알고리즘
                         .compact();
     }
 
