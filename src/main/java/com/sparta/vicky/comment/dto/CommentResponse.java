@@ -21,7 +21,7 @@ public class CommentResponse {
         this.content = comment.getContent();
         this.userId = comment.getUser().getId();
         this.boardId = comment.getBoard().getId();
-        this.likes = comment.getLikes();
+        this.likes = comment.getLikeCount();
         this.createdAt = comment.getCreatedAt();
         this.updatedAt = comment.getUpdatedAt();
     }

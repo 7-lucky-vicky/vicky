@@ -1,4 +1,4 @@
-package com.sparta.vicky.baseEntity;
+package com.sparta.vicky.base.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -14,12 +14,12 @@ import java.time.LocalDateTime;
 public abstract class Timestamped {
 
     @CreatedDate
-    @Column(updatable = false)
+    @Column(nullable = false, updatable = false)
     @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime createdAt;
 
     @LastModifiedDate
-    @Column
+    @Column(nullable = false)
     @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime updatedAt;
 

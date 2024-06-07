@@ -41,7 +41,7 @@ public class Board {
     private final List<Comment> comments = new ArrayList<>();
 
     @Column(nullable = false)
-    private int likes;
+    private int likeCount;
 
     @Column(nullable = false)
     private LocalDateTime createdAt;
@@ -65,7 +65,7 @@ public class Board {
         this.content = boardRequest.getContent();
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
-        this.likes = 0;
+        this.likeCount = 0;
     }
 
     /**
@@ -98,6 +98,17 @@ public class Board {
         this.address = request.getAddress();
         this.content = request.getContent();
         this.updatedAt = LocalDateTime.now();
+    }
+
+    /**
+     * 좋아요 비즈니스 로직
+     */
+    public void increaseLikeCount() {
+        this.likeCount++;
+    }
+
+    public void decreaseLikeCount() {
+        this.likeCount--;
     }
 
 }

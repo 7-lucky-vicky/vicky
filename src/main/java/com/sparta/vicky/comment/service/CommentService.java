@@ -42,11 +42,15 @@ public class CommentService {
      * 특정 댓글 조회
      */
     public Comment getComment(Long boardId, Long commentId) {
-        Comment comment = commentRepository.findById(commentId).orElseThrow(() ->
-                new IllegalArgumentException("commentId " + commentId + " 에 해당하는 댓글이 존재하지 않습니다."));
+        Comment comment = findById(commentId);
         comment.verifyBoard(boardId);
 
         return comment;
+    }
+
+    public Comment findById(Long commentId) {
+        return commentRepository.findById(commentId).orElseThrow(() ->
+                new IllegalArgumentException("commentId " + commentId + " 에 해당하는 댓글이 존재하지 않습니다."));
     }
 
     /**

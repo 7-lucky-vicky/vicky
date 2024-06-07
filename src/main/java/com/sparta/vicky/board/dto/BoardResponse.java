@@ -25,7 +25,7 @@ public class BoardResponse {
         this.address = board.getAddress();
         this.content = board.getContent();
         this.userId = board.getUser().getId();
-        this.likes = board.getLikes();
+        this.likes = board.getLikeCount();
         this.createdAt = board.getCreatedAt();
         this.updatedAt = board.getUpdatedAt();
     }

@@ -4,7 +4,7 @@ import com.sparta.vicky.comment.dto.CommentRequest;
 import com.sparta.vicky.comment.dto.CommentResponse;
 import com.sparta.vicky.comment.entity.Comment;
 import com.sparta.vicky.comment.service.CommentService;
-import com.sparta.vicky.common.dto.CommonResponse;
+import com.sparta.vicky.base.dto.CommonResponse;
 import com.sparta.vicky.security.UserDetailsImpl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
