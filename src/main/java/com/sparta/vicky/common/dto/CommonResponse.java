@@ -1,4 +1,4 @@
-package com.sparta.vicky.basedto;
+package com.sparta.vicky.common.dto;
 
 import lombok.Builder;
 import lombok.Data;
