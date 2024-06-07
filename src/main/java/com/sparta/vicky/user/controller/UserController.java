@@ -18,7 +18,7 @@ import static com.sparta.vicky.user.controller.ControllerUtils.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/users")
+@RequestMapping("/api/user")
 public class UserController {
 
     private final UserService userService;
@@ -26,7 +26,7 @@ public class UserController {
     /**
      * 회원가입
      */
-    @PostMapping
+    @PostMapping("/signup")
     public ResponseEntity<CommonResponse<?>> signup(
             @Valid @RequestBody SignupRequest request,
             BindingResult bindingResult
