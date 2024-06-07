@@ -4,6 +4,8 @@ import com.sparta.vicky.board.dto.BoardRequest;
 import com.sparta.vicky.board.dto.BoardResponse;
 import com.sparta.vicky.board.entity.Board;
 import com.sparta.vicky.board.service.BoardService;
+import com.sparta.vicky.security.UserDetailsImpl;
+import com.sparta.vicky.user.dto.CommonResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -11,6 +13,8 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+
+import static com.sparta.vicky.config.ControllerUtils.*;
 
 @RestController
 @RequestMapping("/api")
@@ -27,7 +31,7 @@ public class BoardController {
 
     //게시물 작성
     @PostMapping("/boards")
-    public BoardResponse createBoard(@Valid @RequestBody BoardRequest request,
+    public ResponseEntity<CommonResponse<?>> createBoard(@Valid @RequestBody BoardRequest request,
                                      @AuthenticationPrincipal UserDetailsImpl userDetails,
                                      BindingResult bindingResult) throws IllegalArgumentException {
         if (bindingResult.hasErrors())
@@ -37,7 +41,7 @@ public class BoardController {
             BoardResponse response = new BoardResponse(board);
             return getResponseEntity(response, "게시물 작성이 완료되었습니다!");
         } catch (Exception e) {
-            return getBadRequestEntity(e);
+            return getBadRequestResponseEntity(e);
         }
 
     }
@@ -56,13 +60,13 @@ public class BoardController {
             BoardResponse response = new BoardResponse(boardService.getBoard(boardId));
             return getResponseEntity(response, "해당 게시물이 성공적으로 조회되었습니다!");
         } catch (Exception e) {
-            return getBadRequestResponseException(e);
+            return getBadRequestResponseEntity(e);
         }
     }
 
     //게시물 수정
     @PutMapping("/boards/{boardId}")
-    public BoardResponse editBoard(@PathVariable Long boardId,
+    public ResponseEntity<CommonResponse<?>> editBoard(@PathVariable Long boardId,
                                    @Valid @RequestBody BoardRequest request,
                                    @AuthenticationPrincipal UserDetailsImpl userDetails,
                                    BindingResult bindingResult) throws IllegalArgumentException {
@@ -73,7 +77,7 @@ public class BoardController {
             BoardResponse response = new BoardResponse(board);
             return getResponseEntity(response, "Schedule updated successfully");
         } catch (Exception e) {
-            return getBadRequestResponseException(e);
+            return getBadRequestResponseEntity(e);
         }
 
     }
@@ -88,7 +92,7 @@ public class BoardController {
 
             return getResponseEntity(response, "게시물이 성공적으로 삭제되었습니다");
         } catch (Exception e) {
-            return getBadRequestResponseException(e);
+            return getBadRequestResponseEntity(e);
         }
     }
 }
