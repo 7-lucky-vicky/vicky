@@ -30,7 +30,7 @@ public class LikeService {
         Long contentId = request.getContentId();
 
         Like like = likeRepository.findByContentTypeAndContentId(contentType, contentId)
-                .orElse(Like.createLike(request, user));
+                .orElse(createLike(request, user));
 
         if (!like.getStatus().equals(LikeStatus.CANCELED)) {
             doLike(like, user); // 취소된 좋아요이거나 신규 좋아요인 경우 좋아요
@@ -39,6 +39,24 @@ public class LikeService {
         }
 
         return like;
+    }
+
+    /**
+     * 신규 좋아요 생성
+     */
+    public Like createLike(LikeRequest request, User user) {
+        Long contentId = request.getContentId();
+        User contentUser = null;
+
+        switch (request.getContentType()) {
+            case BOARD -> contentUser = boardService.getBoard(contentId).getUser();
+            case COMMENT -> contentUser = commentService.findById(contentId).getUser();
+        }
+
+        if (contentUser.equals(user)) {
+            throw new IllegalArgumentException("본인이 작성한 컨텐츠에 좋아요를 남길 수 없습니다.");
+        }
+        return Like.createLike(request, user);
     }
 
     /**
@@ -68,6 +86,5 @@ public class LikeService {
             case COMMENT -> commentService.findById(contentId).decreaseLikeCount();
         }
     }
-
 
 }
