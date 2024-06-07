@@ -1,6 +1,6 @@
 package com.sparta.vicky.util;
 
-import com.sparta.vicky.basedto.CommonResponse;
+import com.sparta.vicky.common.dto.CommonResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
