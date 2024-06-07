@@ -15,7 +15,7 @@ public class BoardService {
     private BoardRepository boardRepository;
 
     public List<Board> getAllBoards() {
-        return boardRepository.findAll();
+        return boardRepository.findAllByOrderByCreatedAtDesc();
     }
 
     @Transactional
