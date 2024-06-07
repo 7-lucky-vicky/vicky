@@ -22,7 +22,7 @@ public class BoardService {
      */
     @Transactional
     public Board createBoard(BoardRequest request, User user) {
-        Board board = Board.create(request, user);
+        Board board = Board.createBoard(request, user);
         return boardRepository.save(board);
     }
 
@@ -54,7 +54,7 @@ public class BoardService {
     @Transactional
     public Board updateBoard(Long boardId, BoardRequest request, User user) {
         Board board = getBoard(boardId);
-        board.verify(user);
+        board.verifyUser(user);
         board.update(request);
 
         return board;
@@ -66,7 +66,7 @@ public class BoardService {
     @Transactional
     public Long deleteBoard(Long boardId, User user) {
         Board board = getBoard(boardId);
-        board.verify(user);
+        board.verifyUser(user);
         boardRepository.delete(board);
 
         return boardId;

@@ -79,7 +79,6 @@ public class BoardController {
         } catch (Exception e) {
             return getBadRequestResponseEntity(e);
         }
-
     }
 
     /**
