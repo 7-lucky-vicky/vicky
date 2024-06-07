@@ -90,6 +90,7 @@ public class Comment {
      */
     public void update(CommentRequest request) {
         this.content = request.getContent();
+        this.updatedAt = LocalDateTime.now();
     }
 
 }

@@ -86,7 +86,7 @@ public class Board {
      */
     public void verifyUser(User user) {
         if (!this.user.equals(user))
-            throw new IllegalArgumentException("이 게시물의 작성자가 아닙니다.");
+            throw new IllegalArgumentException("해당 게시물의 작성자가 아닙니다.");
     }
 
     /**
@@ -97,6 +97,7 @@ public class Board {
         this.region = request.getRegion();
         this.address = request.getAddress();
         this.content = request.getContent();
+        this.updatedAt = LocalDateTime.now();
     }
 
 }
