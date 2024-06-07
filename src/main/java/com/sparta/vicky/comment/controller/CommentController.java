@@ -1,10 +1,10 @@
 package com.sparta.vicky.comment.controller;
 
-import com.sparta.vicky.CommonResponse;
 import com.sparta.vicky.comment.dto.CommentRequest;
 import com.sparta.vicky.comment.dto.CommentResponse;
 import com.sparta.vicky.comment.entity.Comment;
 import com.sparta.vicky.comment.service.CommentService;
+import com.sparta.vicky.common.dto.CommonResponse;
 import com.sparta.vicky.security.UserDetailsImpl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Objects;
 
-import static com.sparta.vicky.comment.controller.ControllerUtils.*;
+import static com.sparta.vicky.util.ControllerUtil.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -26,7 +26,7 @@ public class CommentController {
     private final CommentService commentService;
 
     /**
-     * 새로운 댓글 생성 후 해당 일정에 추가
+     * 댓글 작성
      */
     @PostMapping
     public ResponseEntity<CommonResponse<?>> createComment(
@@ -34,10 +34,9 @@ public class CommentController {
             @Valid @RequestBody CommentRequest request,
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             BindingResult bindingResult
-    ) throws IllegalArgumentException {
-        // 바인딩 예외 처리
+    ) {
         if (bindingResult.hasErrors()) {
-            return getFieldErrorResponseEntity(bindingResult, "Failed to create comment");
+            return getFieldErrorResponseEntity(bindingResult, "댓글 작성 실패");
         }
         try {
             verifyPathVariable(boardId, request);
@@ -45,7 +44,7 @@ public class CommentController {
             Comment comment = commentService.createComment(request, userDetails.getUser());
             CommentResponse response = new CommentResponse(comment);
 
-            return getResponseEntity(response, "Comment created successfully");
+            return getResponseEntity(response, "댓글 작성 성공");
 
         } catch (Exception e) {
             return getBadRequestResponseEntity(e);
@@ -53,31 +52,31 @@ public class CommentController {
     }
 
     /**
-     * 모든 댓글 조회
+     * 특정 게시물의 전체 댓글 조회
      */
     @GetMapping
     public ResponseEntity<CommonResponse<?>> getAllComments(
             @PathVariable Long boardId
     ) {
-        List<CommentResponse> response = commentService.getAllComments(boardId)
-                .stream().map(CommentResponse::new).toList();
+        List<CommentResponse> response = commentService.getAllComments(boardId).stream()
+                .map(CommentResponse::new).toList();
 
-        return getResponseEntity(response, "Retrieved all comments successfully");
+        return getResponseEntity(response, "게시물 전체 댓글 조회 성공");
     }
 
     /**
-     * 댓글 조회
+     * 특정 댓글 조회
      */
     @GetMapping("/{commentId}")
     public ResponseEntity<CommonResponse<?>> getComment(
             @PathVariable Long boardId,
             @PathVariable Long commentId
-    ) throws IllegalArgumentException {
+    ) {
         try {
             Comment comment = commentService.getComment(boardId, commentId);
             CommentResponse response = new CommentResponse(comment);
 
-            return getResponseEntity(response, "Retrieved comment successfully");
+            return getResponseEntity(response, "댓글 조회 성공");
 
         } catch (Exception e) {
             return getBadRequestResponseEntity(e);
@@ -94,10 +93,9 @@ public class CommentController {
             @Valid @RequestBody CommentRequest request,
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             BindingResult bindingResult
-    ) throws IllegalArgumentException {
-        // 바인딩 예외 처리
+    ) {
         if (bindingResult.hasErrors()) {
-            return getFieldErrorResponseEntity(bindingResult, "Failed to update comment");
+            return getFieldErrorResponseEntity(bindingResult, "댓글 수정 실패");
         }
         try {
             verifyPathVariable(boardId, request);
@@ -105,7 +103,7 @@ public class CommentController {
             Comment comment = commentService.updateComment(boardId, commentId, request, userDetails.getUser());
             CommentResponse response = new CommentResponse(comment);
 
-            return getResponseEntity(response, "Comment updated successfully");
+            return getResponseEntity(response, "댓글 수정 성공");
 
         } catch (Exception e) {
             return getBadRequestResponseEntity(e);
@@ -120,23 +118,20 @@ public class CommentController {
             @PathVariable Long boardId,
             @PathVariable Long commentId,
             @AuthenticationPrincipal UserDetailsImpl userDetails
-    ) throws IllegalArgumentException {
+    ) {
         try {
             Long response = commentService.deleteComment(boardId, commentId, userDetails.getUser());
 
-            return getResponseEntity(response, "Comment deleted successfully");
+            return getResponseEntity(response, "댓글 삭제 성공");
 
         } catch (Exception e) {
             return getBadRequestResponseEntity(e);
         }
     }
 
-    /**
-     * 'PathVariable boardId' 가 'RequestBody 'boardId' 와 같은지 검증
-     */
     private static void verifyPathVariable(Long boardId, CommentRequest request) {
         if (!Objects.equals(boardId, request.getBoardId())) {
-            throw new IllegalArgumentException("Schedule id does not match");
+            throw new IllegalArgumentException("PathVariable boardId가 RequestBody boardId와 다릅니다.");
         }
     }
 
