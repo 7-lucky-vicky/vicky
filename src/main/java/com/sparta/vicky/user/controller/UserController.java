@@ -1,6 +1,6 @@
 package com.sparta.vicky.user.controller;
 
-import com.sparta.vicky.user.dto.CommonResponse;
+import com.sparta.vicky.base.dto.CommonResponse;
 import com.sparta.vicky.user.dto.SignupRequest;
 import com.sparta.vicky.user.dto.SignupResponse;
 import com.sparta.vicky.user.entity.User;
@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import static com.sparta.vicky.config.ControllerUtils.*;
+import static com.sparta.vicky.util.ControllerUtil.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -30,16 +30,16 @@ public class UserController {
     public ResponseEntity<CommonResponse<?>> signup(
             @Valid @RequestBody SignupRequest request,
             BindingResult bindingResult
-    ) throws IllegalArgumentException {
-        // 바인딩 예외 처리
+    ) {
         if (bindingResult.hasErrors()) {
-            return getFieldErrorResponseEntity(bindingResult, "Failed to signup");
+            return getFieldErrorResponseEntity(bindingResult, "회원가입 실패");
         }
         try {
             User user = userService.signup(request);
             SignupResponse response = new SignupResponse(user);
 
-            return getResponseEntity(response, "Signup successful");
+            return getResponseEntity(response, "회원가입 성공");
+
         } catch (Exception e) {
             return getBadRequestResponseEntity(e);
         }

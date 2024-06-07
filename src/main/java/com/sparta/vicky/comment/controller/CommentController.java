@@ -4,7 +4,7 @@ import com.sparta.vicky.comment.dto.CommentRequest;
 import com.sparta.vicky.comment.dto.CommentResponse;
 import com.sparta.vicky.comment.entity.Comment;
 import com.sparta.vicky.comment.service.CommentService;
-import com.sparta.vicky.common.dto.CommonResponse;
+import com.sparta.vicky.base.dto.CommonResponse;
 import com.sparta.vicky.security.UserDetailsImpl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -121,7 +121,6 @@ public class CommentController {
     ) {
         try {
             Long response = commentService.deleteComment(boardId, commentId, userDetails.getUser());
-
             return getResponseEntity(response, "댓글 삭제 성공");
 
         } catch (Exception e) {

@@ -35,18 +35,22 @@ public class CommentService {
      * 특정 게시물의 전체 댓글 조회
      */
     public List<Comment> getAllComments(Long boardId) {
-        return commentRepository.findAllByBoardIdOrderByCreatedDate(boardId);
+        return commentRepository.findAllByBoardIdOrderByCreatedAt(boardId);
     }
 
     /**
      * 특정 댓글 조회
      */
     public Comment getComment(Long boardId, Long commentId) {
-        Comment comment = commentRepository.findById(commentId).orElseThrow(() ->
-                new IllegalArgumentException("commentId " + commentId + " 에 해당하는 댓글이 존재하지 않습니다."));
-        comment.verify(boardId);
+        Comment comment = findById(commentId);
+        comment.verifyBoard(boardId);
 
         return comment;
+    }
+
+    public Comment findById(Long commentId) {
+        return commentRepository.findById(commentId).orElseThrow(() ->
+                new IllegalArgumentException("commentId " + commentId + " 에 해당하는 댓글이 존재하지 않습니다."));
     }
 
     /**
@@ -55,7 +59,7 @@ public class CommentService {
     @Transactional
     public Comment updateComment(Long boardId, Long commentId, CommentRequest request, User user) {
         Comment comment = getComment(boardId, commentId);
-        comment.verify(user);
+        comment.verifyUser(user);
         comment.update(request);
 
         return comment;
@@ -67,7 +71,7 @@ public class CommentService {
     @Transactional
     public Long deleteComment(Long boardId, Long commentId, User user) {
         Comment comment = getComment(boardId, commentId);
-        comment.verify(user);
+        comment.verifyUser(user);
         commentRepository.delete(comment);
 
         return commentId;

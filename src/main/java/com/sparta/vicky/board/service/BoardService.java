@@ -4,6 +4,8 @@ import com.sparta.vicky.board.dto.BoardRequest;
 import com.sparta.vicky.board.entity.Board;
 import com.sparta.vicky.board.repository.BoardRepository;
 import com.sparta.vicky.user.entity.User;
+import com.sparta.vicky.user.entity.UserStatus;
+import com.sparta.vicky.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,13 +18,13 @@ import java.util.List;
 public class BoardService {
 
     private final BoardRepository boardRepository;
-
+    private final UserService userService;
     /**
      * 게시물 작성
      */
     @Transactional
     public Board createBoard(BoardRequest request, User user) {
-        Board board = Board.create(request, user);
+        Board board = Board.createBoard(request, user);
         return boardRepository.save(board);
     }
 
@@ -37,6 +39,11 @@ public class BoardService {
      * 특정 사용자의 전체 게시물 조회
      */
     public List<Board> getUserBoards(Long userId) {
+        // 사용자의 탈퇴 여부 확인
+        User user = userService.findById(userId);
+        if (user.getStatus().equals(UserStatus.WITHDRAWN)) {
+            throw new IllegalArgumentException("해당 사용자는 탈퇴 상태입니다.");
+        }
         return boardRepository.findAllByUserIdOrderByCreatedAtDesc(userId);
     }
 
@@ -54,7 +61,7 @@ public class BoardService {
     @Transactional
     public Board updateBoard(Long boardId, BoardRequest request, User user) {
         Board board = getBoard(boardId);
-        board.verify(user);
+        board.verifyUser(user);
         board.update(request);
 
         return board;
@@ -66,7 +73,7 @@ public class BoardService {
     @Transactional
     public Long deleteBoard(Long boardId, User user) {
         Board board = getBoard(boardId);
-        board.verify(user);
+        board.verifyUser(user);
         boardRepository.delete(board);
 
         return boardId;

@@ -4,7 +4,7 @@ import com.sparta.vicky.board.dto.BoardRequest;
 import com.sparta.vicky.board.dto.BoardResponse;
 import com.sparta.vicky.board.entity.Board;
 import com.sparta.vicky.board.service.BoardService;
-import com.sparta.vicky.common.dto.CommonResponse;
+import com.sparta.vicky.base.dto.CommonResponse;
 import com.sparta.vicky.security.UserDetailsImpl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -79,7 +79,6 @@ public class BoardController {
         } catch (Exception e) {
             return getBadRequestResponseEntity(e);
         }
-
     }
 
     /**

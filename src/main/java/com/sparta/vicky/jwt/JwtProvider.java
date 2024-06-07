@@ -1,6 +1,5 @@
 package com.sparta.vicky.jwt;
 
-import com.sparta.vicky.user.service.UserService;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
@@ -18,8 +17,6 @@ import java.util.Date;
 @Component
 public class JwtProvider {
 
-    private final UserService userService;
-
     // Header KEY 값
     public static final String AUTHORIZATION_ACCESS_HEADER = "Authorization_Access";
     public static final String AUTHORIZATION_REFRESH_HEADER = "Authorization_Refresh";
@@ -34,10 +31,6 @@ public class JwtProvider {
 
     private final SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;
 
-    public JwtProvider(UserService userService) {
-        this.userService = userService;
-    }
-
     @PostConstruct
     public void init() {
         byte[] bytes = Base64.getDecoder().decode(secretKey);
@@ -51,13 +44,12 @@ public class JwtProvider {
         // Access 토큰 만료기간 (30분)
         long ACCESS_TOKEN_TIME = 30 * 60 * 1000L;
 
-        return BEARER_PREFIX +
-                Jwts.builder()
-                        .setSubject(username) // 사용자 식별자값(ID)
-                        .setExpiration(new Date(date.getTime() + ACCESS_TOKEN_TIME)) // Access 토큰 만료기간 (30분)
-                        .setIssuedAt(date) // 발급일
-                        .signWith(key, signatureAlgorithm) // 암호화 알고리즘
-                        .compact();
+        return BEARER_PREFIX + Jwts.builder()
+                .setSubject(username) // 사용자 식별자값(ID)
+                .setExpiration(new Date(date.getTime() + ACCESS_TOKEN_TIME)) // Access 토큰 만료기간 (30분)
+                .setIssuedAt(date) // 발급일
+                .signWith(key, signatureAlgorithm) // 암호화 알고리즘
+                .compact();
     }
 
     // Refresh 토근 생성
@@ -67,14 +59,12 @@ public class JwtProvider {
         // Refresh 토큰 만료기간 (2주)
         long REFRESH_TOKEN_TIME = 14 * 24 * 60 * 60 * 1000L;
 
-        return BEARER_PREFIX +
-                Jwts.builder()
-                        .setSubject(username) // 사용자 식별자값(ID)
-                        .setExpiration(new Date(date.getTime() + REFRESH_TOKEN_TIME)) // Refresh 토큰 만료기간 (2주)
-                        .setIssuedAt(date) // 발급일
-                        .signWith(key, signatureAlgorithm) //
-                        // 암호화 알고리즘
-                        .compact();
+        return BEARER_PREFIX + Jwts.builder()
+                .setSubject(username) // 사용자 식별자값(ID)
+                .setExpiration(new Date(date.getTime() + REFRESH_TOKEN_TIME)) // Refresh 토큰 만료기간 (2주)
+                .setIssuedAt(date) // 발급일
+                .signWith(key, signatureAlgorithm) // 암호화 알고리즘
+                .compact();
     }
 
     // header 에서 AccessToken 가져오기

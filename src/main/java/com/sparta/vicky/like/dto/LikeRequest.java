@@ -1,19 +1,16 @@
 package com.sparta.vicky.like.dto;
 
+import com.sparta.vicky.like.entity.ContentType;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 
 @Getter
 public class LikeRequest {
 
-    @Pattern(
-            regexp = "^(Board|Comment)$",
-            message = "Invalid value. Only 'Board' or 'Comment' are allowed."
-    )
-    private String contentType;
+    @NotNull
+    private ContentType contentType; // 컨텐츠 타입 [BOARD, COMMENT]
 
-    @NotNull(message = "contentId cannot be null")
+    @NotNull
     private Long contentId;
 
 }

@@ -14,17 +14,39 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
+    /**
+     * 회원 가입
+     */
     public User signup(SignupRequest request) {
-        String username = request.getUsername();
-        String password = passwordEncoder.encode(request.getPassword());
-
-        if (userRepository.findByUsername(username).isPresent()) {
-            throw new IllegalArgumentException("Username " + username + " already exists");
+        // 사용자 ID 중복 확인
+        if (userRepository.existsByUsername(request.getUsername())) {
+            throw new IllegalArgumentException("이미 존재하는 ID 입니다.");
         }
+        // 비밀번호 인코딩 & 사용자 생성
+        String password = passwordEncoder.encode(request.getPassword());
+        User user = new User(request, password);
 
-        User user = new User(username, password, request.getName(), request.getEmail(), request.getIntroduce());
-        userRepository.save(user);
-
-        return user;
+        return userRepository.save(user);
     }
+
+    /**
+     * 회원 찾기
+     */
+    public User findById(Long id) {
+        return userRepository.findById(id).orElseThrow(() ->
+                new IllegalArgumentException("userId가 " + id + " 인 사용자가 존재하지 않습니다."));
+    }
+
+    /**
+     * 회원 탈퇴
+     */
+    public Long deleteAccount(String password, User user) {
+        if (passwordEncoder.matches(password, user.getPassword())) {
+            user.withdraw();
+            return user.getId();
+        } else {
+            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+        }
+    }
+
 }
