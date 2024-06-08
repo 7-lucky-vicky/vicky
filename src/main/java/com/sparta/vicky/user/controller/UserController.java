@@ -4,6 +4,7 @@ import com.sparta.vicky.base.dto.CommonResponse;
 import com.sparta.vicky.security.UserDetailsImpl;
 import com.sparta.vicky.user.dto.SignupRequest;
 import com.sparta.vicky.user.dto.SignupResponse;
+import com.sparta.vicky.user.dto.WithdrawRequest;
 import com.sparta.vicky.user.entity.User;
 import com.sparta.vicky.user.service.UserService;
 import jakarta.validation.Valid;
@@ -52,12 +53,11 @@ public class UserController {
      */
     @PostMapping("/withdraw")
     public ResponseEntity<CommonResponse<?>> withdraw(
-            String password,
+            @RequestBody WithdrawRequest request,
             @AuthenticationPrincipal UserDetailsImpl userDetails
     ) {
         try {
-            User user = userDetails.getUser();
-            Long response = userService.withdraw(password, user);
+            Long response = userService.withdraw(request, userDetails.getUser().getId());
 
             return getResponseEntity(response, "회원 탈퇴 성공");
 

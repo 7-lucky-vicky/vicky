@@ -3,12 +3,13 @@ package com.sparta.vicky.security;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sparta.vicky.jwt.JwtProvider;
 import com.sparta.vicky.user.dto.LoginRequest;
-import com.sparta.vicky.user.entity.User;
+import com.sparta.vicky.user.service.UserService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -16,12 +17,16 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import java.io.IOException;
 
-import static jakarta.servlet.http.HttpServletResponse.*;
+import static jakarta.servlet.http.HttpServletResponse.SC_OK;
+import static jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 
 @Slf4j(topic = "로그인 및 JWT 생성")
 public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
     private final JwtProvider jwtProvider;
+
+    @Autowired
+    private UserService userService;
 
     public JwtAuthenticationFilter(JwtProvider jwtProvider) {
         this.jwtProvider = jwtProvider;
@@ -65,7 +70,6 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     ) throws IOException {
 
         UserDetailsImpl userDetails = (UserDetailsImpl) authResult.getPrincipal();
-        User user = userDetails.getUser();
         String username = userDetails.getUsername();
 
         String accessToken = jwtProvider.createAccessToken(username);
@@ -75,7 +79,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         res.addHeader(JwtProvider.AUTHORIZATION_REFRESH_HEADER, refreshToken);
 
         // 사용자 개인 필드에 refreshToken 저장
-        user.saveRefreshToken(refreshToken);
+        userService.saveRefreshToken(refreshToken, userDetails.getUser().getId());
 
         log.info("로그인 성공 : {}", username);
 

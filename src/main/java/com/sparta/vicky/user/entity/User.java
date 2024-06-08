@@ -75,6 +75,8 @@ public class User extends Timestamped {
      */
     public void saveRefreshToken(String refreshToken) {
         this.refreshToken = refreshToken;
+        System.out.println("User.saveRefreshToken");
+        System.out.println("refreshToken = " + refreshToken);
     }
 
     /**
@@ -83,6 +85,8 @@ public class User extends Timestamped {
     public void withdraw() {
         this.status = UserStatus.WITHDRAWN;
         this.statusUpdatedAt = LocalDateTime.now();
+        System.out.println("User.withdraw");
+        System.out.println("statusUpdatedAt = " + statusUpdatedAt);
     }
 
 }
