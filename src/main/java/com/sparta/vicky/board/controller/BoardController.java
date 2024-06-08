@@ -1,13 +1,17 @@
 package com.sparta.vicky.board.controller;
 
+import com.sparta.vicky.base.dto.CommonResponse;
 import com.sparta.vicky.board.dto.BoardRequest;
 import com.sparta.vicky.board.dto.BoardResponse;
 import com.sparta.vicky.board.entity.Board;
 import com.sparta.vicky.board.service.BoardService;
-import com.sparta.vicky.base.dto.CommonResponse;
 import com.sparta.vicky.security.UserDetailsImpl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.BindingResult;
@@ -51,34 +55,25 @@ public class BoardController {
      * 전체 게시물 조회
      */
     @GetMapping
-    public ResponseEntity<CommonResponse<?>> getAllBoards() {
-        List<Board> boardList = boardService.getAllBoards();
-        if (boardList.isEmpty()) {
+    public ResponseEntity<CommonResponse<?>> getAllBoards(
+            @RequestParam(required = false) Long userId,
+            @PageableDefault(
+                    page = 1,
+                    sort = "createdAt",
+                    direction = Sort.Direction.DESC
+            ) Pageable pageable
+    ) {
+        Page<Board> allBoards = boardService.getAllBoards(userId, pageable);
+
+        // 게시물이 없는 경우
+        if (allBoards.isEmpty()) {
             return getResponseEntity(null, "먼저 작성하여 소식을 알려보세요!");
         }
 
-        List<BoardResponse> response = boardList.stream()
+        List<BoardResponse> response = allBoards.stream()
                 .map(BoardResponse::new).toList();
 
         return getResponseEntity(response, "전체 게시물 조회 성공");
-    }
-
-    /**
-     * 특정 사용자의 전체 게시물 조회
-     */
-    @GetMapping
-    public ResponseEntity<CommonResponse<?>> getUserBoards(
-            @RequestParam Long userId
-    ) {
-        try {
-            List<BoardResponse> response = boardService.getUserBoards(userId).stream()
-                    .map(BoardResponse::new).toList();
-
-            return getResponseEntity(response, "사용자 전체 게시물 조회 성공");
-
-        } catch (Exception e) {
-            return getBadRequestResponseEntity(e);
-        }
     }
 
     /**

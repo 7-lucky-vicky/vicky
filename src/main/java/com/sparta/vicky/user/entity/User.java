@@ -54,7 +54,6 @@ public class User extends Timestamped {
     @Column(nullable = false)
     private LocalDateTime statusUpdatedAt;
 
-    @Column(nullable = false)
     private String refreshToken;
 
     /**
