@@ -3,6 +3,7 @@ package com.sparta.vicky.security;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sparta.vicky.jwt.JwtProvider;
 import com.sparta.vicky.user.dto.LoginRequest;
+import com.sparta.vicky.user.entity.User;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -62,12 +63,19 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
             HttpServletResponse res,
             FilterChain chain, Authentication authResult
     ) throws IOException {
-        String username = ((UserDetailsImpl) authResult.getPrincipal()).getUsername();
+
+        UserDetailsImpl userDetails = (UserDetailsImpl) authResult.getPrincipal();
+        User user = userDetails.getUser();
+        String username = userDetails.getUsername();
 
         String accessToken = jwtProvider.createAccessToken(username);
         String refreshToken = jwtProvider.createRefreshToken(username);
+
         res.addHeader(JwtProvider.AUTHORIZATION_ACCESS_HEADER, accessToken);
         res.addHeader(JwtProvider.AUTHORIZATION_REFRESH_HEADER, refreshToken);
+
+        // 사용자 개인 필드에 refreshToken 저장
+        user.saveRefreshToken(refreshToken);
 
         log.info("로그인 성공 : {}", username);
 
@@ -78,7 +86,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
         // JSON 응답 생성
         String jsonResponse = new ObjectMapper()
-                .writeValueAsString(new ApiResponse(SC_OK, "로그인 성공"));
+                .writeValueAsString(new ApiResponse(SC_OK, "로그인 성공", accessToken));
 
         res.getWriter().write(jsonResponse);
     }
@@ -100,7 +108,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
         // JSON 응답 생성
         String jsonResponse = new ObjectMapper()
-                .writeValueAsString(new ApiResponse(SC_UNAUTHORIZED, "로그인 실패: " + failed.getMessage()));
+                .writeValueAsString(new ApiResponse(SC_UNAUTHORIZED, "로그인 실패: " + failed.getMessage(), null));
 
         res.getWriter().write(jsonResponse);
     }
@@ -113,10 +121,12 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
         private int statusCode;
         private String msg;
+        private String accessToken;
 
-        public ApiResponse(int statusCode, String msg) {
+        public ApiResponse(int statusCode, String msg, String accessToken) {
             this.statusCode = statusCode;
             this.msg = msg;
+            this.accessToken = accessToken;
         }
 
     }
