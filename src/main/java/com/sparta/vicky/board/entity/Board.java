@@ -19,6 +19,7 @@ public class Board {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "board_id")
     private Long id;
 
     @Column(nullable = false)
@@ -50,15 +51,9 @@ public class Board {
     private LocalDateTime updatedAt;
 
     /**
-     * 생성 메서드
+     * 생성자
      */
-    public static Board createBoard(BoardRequest request, User user) {
-        Board board = new Board(request);
-        board.setUser(user);
-        return board;
-    }
-
-    private Board(BoardRequest boardRequest) {
+    public Board(BoardRequest boardRequest, User user) {
         this.title = boardRequest.getTitle();
         this.region = boardRequest.getRegion();
         this.address = boardRequest.getAddress();
@@ -66,6 +61,7 @@ public class Board {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
         this.likeCount = 0;
+        this.user = user;
     }
 
     /**
@@ -73,12 +69,7 @@ public class Board {
      */
     public void setUser(User user) {
         this.user = user;
-        user.addBoard(this);
-    }
-
-    public void addComment(Comment comment) {
-        this.comments.add(comment);
-        comment.setBoard(this);
+        user.getBoards().add(this);
     }
 
     /**
