@@ -17,6 +17,7 @@ public class Comment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "comment_id")
     private Long id;
 
     @Column(nullable = false)
@@ -62,12 +63,12 @@ public class Comment {
      */
     public void setUser(User user) {
         this.user = user;
-        user.addComment(this);
+        user.getComments().add(this);
     }
 
     public void setBoard(Board board) {
         this.board = board;
-        board.addComment(this);
+        board.getComments().add(this);
     }
 
     /**
