@@ -16,6 +16,7 @@ public class Like extends Timestamped {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "like_id")
     private Long id;
 
     @Column(nullable = false)
@@ -54,7 +55,7 @@ public class Like extends Timestamped {
      */
     public void setUser(User user) {
         this.user = user;
-        user.addLike(this);
+        user.getLikes().add(this);
     }
 
     /**

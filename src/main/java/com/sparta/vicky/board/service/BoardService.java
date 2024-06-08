@@ -25,8 +25,7 @@ public class BoardService {
      */
     @Transactional
     public Board createBoard(BoardRequest request, User user) {
-        Board board = Board.createBoard(request, user);
-        return boardRepository.save(board);
+        return boardRepository.save(new Board(request, user));
     }
 
     /**
@@ -36,8 +35,7 @@ public class BoardService {
         if (userId == null) {
             return boardRepository.findAll(pageable);
         }
-
-        User user = userService.findById(userId);
+        User user = userService.getUser(userId);
         // 사용자 탈퇴 여부 확인
         if (user.getStatus().equals(UserStatus.WITHDRAWN)) {
             throw new IllegalArgumentException("해당 사용자는 탈퇴 상태입니다.");

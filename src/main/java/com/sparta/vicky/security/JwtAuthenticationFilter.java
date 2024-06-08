@@ -3,11 +3,13 @@ package com.sparta.vicky.security;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sparta.vicky.jwt.JwtProvider;
 import com.sparta.vicky.user.dto.LoginRequest;
+import com.sparta.vicky.user.service.UserService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -15,12 +17,16 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import java.io.IOException;
 
-import static jakarta.servlet.http.HttpServletResponse.*;
+import static jakarta.servlet.http.HttpServletResponse.SC_OK;
+import static jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 
 @Slf4j(topic = "로그인 및 JWT 생성")
 public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
     private final JwtProvider jwtProvider;
+
+    @Autowired
+    private UserService userService;
 
     public JwtAuthenticationFilter(JwtProvider jwtProvider) {
         this.jwtProvider = jwtProvider;
@@ -62,12 +68,18 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
             HttpServletResponse res,
             FilterChain chain, Authentication authResult
     ) throws IOException {
-        String username = ((UserDetailsImpl) authResult.getPrincipal()).getUsername();
+
+        UserDetailsImpl userDetails = (UserDetailsImpl) authResult.getPrincipal();
+        String username = userDetails.getUsername();
 
         String accessToken = jwtProvider.createAccessToken(username);
         String refreshToken = jwtProvider.createRefreshToken(username);
+
         res.addHeader(JwtProvider.AUTHORIZATION_ACCESS_HEADER, accessToken);
         res.addHeader(JwtProvider.AUTHORIZATION_REFRESH_HEADER, refreshToken);
+
+        // 사용자 개인 필드에 refreshToken 저장
+        userService.saveRefreshToken(refreshToken, userDetails.getUser().getId());
 
         log.info("로그인 성공 : {}", username);
 
@@ -78,7 +90,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
         // JSON 응답 생성
         String jsonResponse = new ObjectMapper()
-                .writeValueAsString(new ApiResponse(SC_OK, "로그인 성공"));
+                .writeValueAsString(new ApiResponse(SC_OK, "로그인 성공", accessToken));
 
         res.getWriter().write(jsonResponse);
     }
@@ -100,7 +112,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
         // JSON 응답 생성
         String jsonResponse = new ObjectMapper()
-                .writeValueAsString(new ApiResponse(SC_UNAUTHORIZED, "로그인 실패: " + failed.getMessage()));
+                .writeValueAsString(new ApiResponse(SC_UNAUTHORIZED, "로그인 실패: " + failed.getMessage(), null));
 
         res.getWriter().write(jsonResponse);
     }
@@ -113,10 +125,12 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
         private int statusCode;
         private String msg;
+        private String accessToken;
 
-        public ApiResponse(int statusCode, String msg) {
+        public ApiResponse(int statusCode, String msg, String accessToken) {
             this.statusCode = statusCode;
             this.msg = msg;
+            this.accessToken = accessToken;
         }
 
     }

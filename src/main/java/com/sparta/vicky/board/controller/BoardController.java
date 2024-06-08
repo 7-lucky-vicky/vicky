@@ -17,8 +17,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 import static com.sparta.vicky.util.ControllerUtil.*;
 
 @RestController
@@ -56,22 +54,20 @@ public class BoardController {
      */
     @GetMapping
     public ResponseEntity<CommonResponse<?>> getAllBoards(
-            @RequestParam(required = false) Long userId,
+            @RequestParam(defaultValue = "") Long userId,
             @PageableDefault(
-                    page = 1,
                     sort = "createdAt",
                     direction = Sort.Direction.DESC
             ) Pageable pageable
     ) {
-        Page<Board> allBoards = boardService.getAllBoards(userId, pageable);
+        Page<Board> page = boardService.getAllBoards(userId, pageable);
 
         // 게시물이 없는 경우
-        if (allBoards.isEmpty()) {
+        if (page.getTotalElements() == 0) {
             return getResponseEntity(null, "먼저 작성하여 소식을 알려보세요!");
         }
 
-        List<BoardResponse> response = allBoards.stream()
-                .map(BoardResponse::new).toList();
+        Page<BoardResponse> response = page.map(BoardResponse::new);
 
         return getResponseEntity(response, "전체 게시물 조회 성공");
     }

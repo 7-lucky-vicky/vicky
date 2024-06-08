@@ -1,11 +1,13 @@
 package com.sparta.vicky.user.service;
 
 import com.sparta.vicky.user.dto.SignupRequest;
+import com.sparta.vicky.user.dto.WithdrawRequest;
 import com.sparta.vicky.user.entity.User;
 import com.sparta.vicky.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -23,8 +25,8 @@ public class UserService {
             throw new IllegalArgumentException("이미 존재하는 ID 입니다.");
         }
         // 비밀번호 인코딩 & 사용자 생성
-        String password = passwordEncoder.encode(request.getPassword());
-        User user = new User(request, password);
+        String encodedPassword = passwordEncoder.encode(request.getPassword());
+        User user = new User(request, encodedPassword);
 
         return userRepository.save(user);
     }
@@ -32,16 +34,24 @@ public class UserService {
     /**
      * 회원 찾기
      */
-    public User findById(Long id) {
+    public User getUser(Long id) {
         return userRepository.findById(id).orElseThrow(() ->
                 new IllegalArgumentException("userId가 " + id + " 인 사용자가 존재하지 않습니다."));
+    }
+
+    @Transactional
+    public void saveRefreshToken(String refreshToken, Long userId) {
+        User user = getUser(userId);
+        user.saveRefreshToken(refreshToken);
     }
 
     /**
      * 회원 탈퇴
      */
-    public Long deleteAccount(String password, User user) {
-        if (passwordEncoder.matches(password, user.getPassword())) {
+    @Transactional
+    public Long withdraw(WithdrawRequest request, Long userId) {
+        User user = getUser(userId);
+        if (passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             user.withdraw();
             return user.getId();
         } else {

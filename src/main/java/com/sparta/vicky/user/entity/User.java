@@ -21,6 +21,7 @@ public class User extends Timestamped {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "user_id")
     private Long id;
 
     @Column(nullable = false, unique = true)
@@ -59,9 +60,9 @@ public class User extends Timestamped {
     /**
      * 생성자
      */
-    public User(SignupRequest request, String password) {
+    public User(SignupRequest request, String encodedPassword) {
         this.username = request.getUsername();
-        this.password = password;
+        this.password = encodedPassword;
         this.name = request.getName();
         this.email = request.getEmail();
         this.introduce = request.getIntroduce();
@@ -70,28 +71,12 @@ public class User extends Timestamped {
     }
 
     /**
-     * 연관관계 편의 메서드
-     */
-    public void addBoard(Board board) {
-        boards.add(board);
-        board.setUser(this);
-    }
-
-    public void addComment(Comment comment) {
-        comments.add(comment);
-        comment.setUser(this);
-    }
-
-    public void addLike(Like like) {
-        likes.add(like);
-        like.setUser(this);
-    }
-
-    /**
      *  RefreshToken 저장 메서드
      */
     public void saveRefreshToken(String refreshToken) {
         this.refreshToken = refreshToken;
+        System.out.println("User.saveRefreshToken");
+        System.out.println("refreshToken = " + refreshToken);
     }
 
     /**
@@ -100,6 +85,8 @@ public class User extends Timestamped {
     public void withdraw() {
         this.status = UserStatus.WITHDRAWN;
         this.statusUpdatedAt = LocalDateTime.now();
+        System.out.println("User.withdraw");
+        System.out.println("statusUpdatedAt = " + statusUpdatedAt);
     }
 
 }
