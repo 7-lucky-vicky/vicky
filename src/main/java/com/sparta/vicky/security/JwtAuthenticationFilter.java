@@ -3,13 +3,11 @@ package com.sparta.vicky.security;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sparta.vicky.jwt.JwtProvider;
 import com.sparta.vicky.user.dto.LoginRequest;
-import com.sparta.vicky.user.service.UserService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -24,9 +22,6 @@ import static jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
     private final JwtProvider jwtProvider;
-
-    @Autowired
-    private UserService userService;
 
     public JwtAuthenticationFilter(JwtProvider jwtProvider) {
         this.jwtProvider = jwtProvider;
@@ -77,9 +72,6 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
         res.addHeader(JwtProvider.AUTHORIZATION_ACCESS_HEADER, accessToken);
         res.addHeader(JwtProvider.AUTHORIZATION_REFRESH_HEADER, refreshToken);
-
-        // 사용자 개인 필드에 refreshToken 저장
-        userService.saveRefreshToken(refreshToken, userDetails.getUser().getId());
 
         log.info("로그인 성공 : {}", username);
 

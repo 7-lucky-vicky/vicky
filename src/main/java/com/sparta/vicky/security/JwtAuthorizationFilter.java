@@ -32,20 +32,52 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain filterChain) throws ServletException, IOException {
 
         String accessTokenValue = jwtProvider.getAccessTokenFromHeader(req);
+        String refreshTokenValue = jwtProvider.getRefreshTokenFromHeader(req);
 
         if (StringUtils.hasText(accessTokenValue)) {
-            if (!jwtProvider.validateToken(accessTokenValue)) {
-                log.error("Token Error");
+            // access 토큰이 유효하지 않을 때
+            if ("fail".equals(jwtProvider.validateToken(accessTokenValue))) {
+                log.error("Token Unsupported");
                 return;
             }
+            // access 토큰이 유효할 때
+            else if("pass".equals(jwtProvider.validateToken(accessTokenValue))) {
+                Claims info = jwtProvider.getUserInfoFromToken(accessTokenValue);
 
-            Claims info = jwtProvider.getUserInfoFromToken(accessTokenValue);
+                try {
+                    setAuthentication(info.getSubject());
+                } catch (Exception e) {
+                    log.error(e.getMessage());
+                    return;
+                }
+            }
+            // access 토큰이 expired 되었을 때
+            else if("expired".equals(jwtProvider.validateToken(accessTokenValue))) {
+                log.error("Access Token Expired");
+                if(StringUtils.hasText(refreshTokenValue)) {
+                    Claims info = jwtProvider.getUserInfoFromToken(refreshTokenValue);
 
-            try {
-                setAuthentication(info.getSubject());
-            } catch (Exception e) {
-                log.error(e.getMessage());
-                return;
+                    //refresh 토큰이 유효할 때
+                    if(jwtProvider.validateRefreshToken(refreshTokenValue, info.getSubject())) {
+
+                        String accessToken = jwtProvider.createAccessToken(info.getSubject());
+                        String refreshToken = jwtProvider.createRefreshToken(info.getSubject());
+
+                        res.addHeader(JwtProvider.AUTHORIZATION_ACCESS_HEADER, accessToken);
+                        res.addHeader(JwtProvider.AUTHORIZATION_REFRESH_HEADER, refreshToken);
+
+                        try {
+                            setAuthentication(info.getSubject());
+                        } catch (Exception e) {
+                            log.error(e.getMessage());
+                            return;
+                        }
+                    }
+                    else{
+                        log.error("Refresh Token Expired");
+                        return;
+                    }
+                }
             }
         }
 

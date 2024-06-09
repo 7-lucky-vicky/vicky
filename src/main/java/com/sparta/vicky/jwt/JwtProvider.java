@@ -1,9 +1,11 @@
 package com.sparta.vicky.jwt;
 
+import com.sparta.vicky.user.service.UserService;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -15,7 +17,10 @@ import java.util.Date;
 
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class JwtProvider {
+
+    private final UserService userService;
 
     // Header KEY 값
     public static final String AUTHORIZATION_ACCESS_HEADER = "Authorization_Access";
@@ -59,12 +64,16 @@ public class JwtProvider {
         // Refresh 토큰 만료기간 (2주)
         long REFRESH_TOKEN_TIME = 14 * 24 * 60 * 60 * 1000L;
 
-        return BEARER_PREFIX + Jwts.builder()
+        String refreshToken =  BEARER_PREFIX + Jwts.builder()
                 .setSubject(username) // 사용자 식별자값(ID)
                 .setExpiration(new Date(date.getTime() + REFRESH_TOKEN_TIME)) // Refresh 토큰 만료기간 (2주)
                 .setIssuedAt(date) // 발급일
                 .signWith(key, signatureAlgorithm) // 암호화 알고리즘
                 .compact();
+
+        userService.saveRefreshToken(refreshToken.substring(7), username);
+
+        return refreshToken;
     }
 
     // header 에서 AccessToken 가져오기
@@ -86,20 +95,31 @@ public class JwtProvider {
     }
 
     // 토큰 검증
-    public boolean validateToken(String token) {
+    public String validateToken(String token) {
         try {
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
-            return true;
+            return "pass";
         } catch (SecurityException | MalformedJwtException e) {
             log.error("유효하지 않는 JWT 서명 입니다.");
+            return "fail";
         } catch (ExpiredJwtException e) {
             log.error("만료된 JWT token 입니다.");
+            return "expired";
         } catch (UnsupportedJwtException e) {
             log.error("지원되지 않는 JWT 토큰 입니다.");
+            return "fail";
         } catch (IllegalArgumentException e) {
             log.error("잘못된 JWT 토큰 입니다.");
+            return "fail";
         }
-        return false;
+    }
+
+    // refresh 토큰 검증
+    public boolean validateRefreshToken(String refreshToken, String username) {
+        if(!"pass".equals(refreshToken)) return false;
+
+        return userService.checkRefreshToken(refreshToken, username);
+
     }
 
     // 토큰에서 사용자 정보 가져오기

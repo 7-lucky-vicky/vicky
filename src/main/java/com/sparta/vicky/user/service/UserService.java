@@ -1,6 +1,8 @@
 package com.sparta.vicky.user.service;
 
+import com.sparta.vicky.user.dto.ProfileResponse;
 import com.sparta.vicky.user.dto.SignupRequest;
+import com.sparta.vicky.user.dto.UpdateProfileRequest;
 import com.sparta.vicky.user.dto.WithdrawRequest;
 import com.sparta.vicky.user.entity.User;
 import com.sparta.vicky.user.repository.UserRepository;
@@ -8,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -39,12 +43,6 @@ public class UserService {
                 new IllegalArgumentException("userId가 " + id + " 인 사용자가 존재하지 않습니다."));
     }
 
-    @Transactional
-    public void saveRefreshToken(String refreshToken, Long userId) {
-        User user = getUser(userId);
-        user.saveRefreshToken(refreshToken);
-    }
-
     /**
      * 회원 탈퇴
      */
@@ -59,4 +57,54 @@ public class UserService {
         }
     }
 
+    /**
+     * 로그아웃
+     */
+    @Transactional
+    public Long logout(Long id) {
+        User user = getUser(id);
+        // 로그아웃 시 refresh 토큰 비워주기
+        user.saveRefreshToken("");
+
+        return user.getId();
+    }
+
+    /**
+     * 프로필 조회
+     */
+    public ProfileResponse getProfile(Long id) {
+        User user = getUser(id);
+        return new ProfileResponse(user.getUsername(), user.getName(), user.getEmail(), user.getIntroduce());
+    }
+
+    /**
+     * 프로필 수정
+     */
+    @Transactional
+    public ProfileResponse updateProfile(UpdateProfileRequest request, Long id) {
+        User user = getUser(id);
+        user.updateProfile(request.getName(), request.getEmail(), request.getIntroduce());
+
+        return new ProfileResponse(user.getUsername(), user.getName(), user.getEmail(), user.getIntroduce());
+    }
+
+    /**
+     * refresh 토큰 저장
+     */
+    @Transactional
+    public void saveRefreshToken(String refreshToken, String username) {
+        User user = userRepository.findByUsername(username).orElseThrow(
+                () -> new IllegalArgumentException("Not Found User")
+        );
+        user.saveRefreshToken(refreshToken);
+    }
+
+    /**
+     * refresh 토큰으로 user 조회
+     */
+    public boolean checkRefreshToken(String refreshToken, String username) {
+        Optional<User> user = userRepository.findByUsernameAndRefreshToken(username, refreshToken);
+        return user.isPresent();
+
+    }
 }
