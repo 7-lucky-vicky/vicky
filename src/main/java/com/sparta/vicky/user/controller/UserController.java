@@ -109,4 +109,22 @@ public class UserController {
         }
     }
 
+    /**
+     * 비밀번호 수정
+     */
+    @PatchMapping("/profile")
+    public ResponseEntity<CommonResponse<?>> updateProfile(
+            @Valid @RequestBody UpdatePassword request,
+            @AuthenticationPrincipal UserDetailsImpl userDetails
+    ) {
+        try {
+            ProfileResponse response = userService.updatePassword(request, userDetails.getUser().getId());
+
+            return getResponseEntity(response, "비밀번호 수정 성공");
+
+        } catch (Exception e) {
+            return getBadRequestResponseEntity(e);
+        }
+    }
+
 }

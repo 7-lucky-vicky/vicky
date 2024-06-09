@@ -1,9 +1,6 @@
 package com.sparta.vicky.user.service;
 
-import com.sparta.vicky.user.dto.ProfileResponse;
-import com.sparta.vicky.user.dto.SignupRequest;
-import com.sparta.vicky.user.dto.UpdateProfileRequest;
-import com.sparta.vicky.user.dto.WithdrawRequest;
+import com.sparta.vicky.user.dto.*;
 import com.sparta.vicky.user.entity.User;
 import com.sparta.vicky.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -74,7 +71,7 @@ public class UserService {
      */
     public ProfileResponse getProfile(Long id) {
         User user = getUser(id);
-        return new ProfileResponse(user.getUsername(), user.getName(), user.getEmail(), user.getIntroduce());
+        return new ProfileResponse(user.getName(), user.getEmail(), user.getIntroduce());
     }
 
     /**
@@ -85,7 +82,23 @@ public class UserService {
         User user = getUser(id);
         user.updateProfile(request.getName(), request.getEmail(), request.getIntroduce());
 
-        return new ProfileResponse(user.getUsername(), user.getName(), user.getEmail(), user.getIntroduce());
+        return new ProfileResponse(user.getName(), user.getEmail(), user.getIntroduce());
+    }
+
+    /**
+     * 비밀번호 수정
+     */
+    @Transactional
+    public ProfileResponse updatePassword(UpdatePassword request, Long id) {
+        User user = getUser(id);
+
+        if(!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
+            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+        }
+
+        user.updatePassword(request.getNewPassword());
+
+        return new ProfileResponse(user.getName(), user.getEmail(), user.getIntroduce());
     }
 
     /**
@@ -107,4 +120,5 @@ public class UserService {
         return user.isPresent();
 
     }
+
 }

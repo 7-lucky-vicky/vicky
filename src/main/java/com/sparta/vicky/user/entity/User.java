@@ -99,4 +99,11 @@ public class User extends Timestamped {
         System.out.println("User.updateProfile");
     }
 
+    /**
+     * 비밀번호 수정
+     */
+    public void updatePassword(String password) {
+        this.password = password;
+    }
+
 }
