@@ -2,11 +2,12 @@ package com.sparta.vicky.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sparta.vicky.jwt.JwtProvider;
+import com.sparta.vicky.jwt.RefreshTokenService;
 import com.sparta.vicky.user.dto.LoginRequest;
-import com.sparta.vicky.user.service.UserService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,13 +21,13 @@ import java.io.IOException;
 import static jakarta.servlet.http.HttpServletResponse.SC_OK;
 import static jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 
-@Slf4j(topic = "로그인 및 JWT 생성")
+@Slf4j
 public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
     private final JwtProvider jwtProvider;
 
     @Autowired
-    private UserService userService;
+    private RefreshTokenService refreshTokenService;
 
     public JwtAuthenticationFilter(JwtProvider jwtProvider) {
         this.jwtProvider = jwtProvider;
@@ -37,10 +38,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
      * 로그인 시도
      */
     @Override
-    public org.springframework.security.core.Authentication attemptAuthentication(
-            HttpServletRequest req,
-            HttpServletResponse res
-    ) throws AuthenticationException {
+    public Authentication attemptAuthentication(HttpServletRequest req, HttpServletResponse res) throws AuthenticationException {
         try {
             // json to object
             LoginRequest requestDto = new ObjectMapper()
@@ -63,46 +61,40 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
      * 로그인 성공 및 JWT 생성
      */
     @Override
-    protected void successfulAuthentication(
-            HttpServletRequest req,
-            HttpServletResponse res,
-            FilterChain chain, Authentication authResult
-    ) throws IOException {
-
-        UserDetailsImpl userDetails = (UserDetailsImpl) authResult.getPrincipal();
-        String username = userDetails.getUsername();
+    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException {
+        String username = ((UserDetailsImpl) authResult.getPrincipal()).getUsername();
 
         String accessToken = jwtProvider.createAccessToken(username);
         String refreshToken = jwtProvider.createRefreshToken(username);
 
-        res.addHeader(JwtProvider.AUTHORIZATION_ACCESS_HEADER, accessToken);
-        res.addHeader(JwtProvider.AUTHORIZATION_REFRESH_HEADER, refreshToken);
+        // 헤더에 액세스 토큰 추가
+        response.addHeader(JwtProvider.AUTHORIZATION_HEADER, accessToken);
 
-        // 사용자 개인 필드에 refreshToken 저장
-        userService.saveRefreshToken(refreshToken, userDetails.getUser().getId());
+        // 쿠키에 리프레시 토큰 추가
+        jwtProvider.addJwtToCookie(refreshToken, response);
+
+        // DB에 리프레시 토큰이 이미 있으면 수정, 없으면 저장
+        refreshTokenService.save(username, refreshToken);
 
         log.info("로그인 성공 : {}", username);
 
         // 응답 메시지 작성
-        res.setStatus(SC_OK);
-        res.setCharacterEncoding("UTF-8");
-        res.setContentType("application/json");
+        response.setStatus(SC_OK);
+        response.setCharacterEncoding("UTF-8");
+        response.setContentType("application/json");
 
         // JSON 응답 생성
-        String jsonResponse = new ObjectMapper()
-                .writeValueAsString(new ApiResponse(SC_OK, "로그인 성공", accessToken));
+        String jsonResponse = new ObjectMapper().writeValueAsString(
+                new ApiResponse(SC_OK, "로그인 성공", accessToken, refreshToken)
+        );
 
-        res.getWriter().write(jsonResponse);
+        response.getWriter().write(jsonResponse);
     }
 
     /**
      * 로그인 실패
      */
-    protected void unsuccessfulAuthentication(
-            HttpServletRequest req,
-            HttpServletResponse res,
-            AuthenticationException failed
-    ) throws IOException {
+    protected void unsuccessfulAuthentication(HttpServletRequest req, HttpServletResponse res, AuthenticationException failed) throws IOException {
         log.error("로그인 실패 : {}", failed.getMessage());
 
         // 응답 메시지 작성
@@ -111,8 +103,9 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         res.setContentType("application/json");
 
         // JSON 응답 생성
-        String jsonResponse = new ObjectMapper()
-                .writeValueAsString(new ApiResponse(SC_UNAUTHORIZED, "로그인 실패: " + failed.getMessage(), null));
+        String jsonResponse = new ObjectMapper().writeValueAsString(
+                new ApiResponse(SC_UNAUTHORIZED, "로그인 실패: " + failed.getMessage(), null, null)
+        );
 
         res.getWriter().write(jsonResponse);
     }
@@ -121,17 +114,13 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
      * 로그인 응답 데이터
      */
     @Data
+    @AllArgsConstructor
     private static class ApiResponse {
 
         private int statusCode;
         private String msg;
         private String accessToken;
-
-        public ApiResponse(int statusCode, String msg, String accessToken) {
-            this.statusCode = statusCode;
-            this.msg = msg;
-            this.accessToken = accessToken;
-        }
+        private String refreshToken;
 
     }
 

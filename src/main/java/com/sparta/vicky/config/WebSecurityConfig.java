@@ -66,6 +66,7 @@ public class WebSecurityConfig {
                 .requestMatchers("api/user/**").permitAll()
                 .requestMatchers("api/error/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "api/boards/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "api/profiles/**").permitAll()
                 .anyRequest().authenticated() // 그 외 모든 요청 인증 처리
         );
 
