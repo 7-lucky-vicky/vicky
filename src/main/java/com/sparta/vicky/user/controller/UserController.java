@@ -5,6 +5,8 @@ import com.sparta.vicky.security.UserDetailsImpl;
 import com.sparta.vicky.user.dto.*;
 import com.sparta.vicky.user.entity.User;
 import com.sparta.vicky.user.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -72,6 +74,25 @@ public class UserController {
             Long response = userService.withdraw(request, userDetails.getUser().getId());
 
             return getResponseEntity(response, "회원 탈퇴 성공");
+
+        } catch (Exception e) {
+            return getBadRequestResponseEntity(e);
+        }
+    }
+
+    /**
+     * 토큰 재발급
+     */
+    @PostMapping("/user/reissue")
+    public ResponseEntity<CommonResponse<?>> reissue(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            @AuthenticationPrincipal UserDetailsImpl userDetails
+    ) {
+        try {
+            User user = userService.reissue(request, response, userDetails.getUser().getId());
+
+            return getResponseEntity(user, "토큰 재발급 성공");
 
         } catch (Exception e) {
             return getBadRequestResponseEntity(e);

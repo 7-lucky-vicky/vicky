@@ -1,19 +1,27 @@
 package com.sparta.vicky.user.service;
 
+import com.sparta.vicky.jwt.JwtProvider;
 import com.sparta.vicky.user.dto.*;
 import com.sparta.vicky.user.entity.User;
 import com.sparta.vicky.user.repository.UserRepository;
+import io.jsonwebtoken.Claims;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtProvider jwtProvider;
 
     /**
      * 회원 가입
@@ -62,6 +70,34 @@ public class UserService {
         } else {
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
         }
+    }
+
+    /**
+     * 토큰 재발급
+     */
+    @Transactional
+    public User reissue(HttpServletRequest request, HttpServletResponse response, Long id) {
+        User user = getUser(id);
+        String token  = jwtProvider.getRefreshTokenFromHeader(request);
+
+        if (StringUtils.hasText(token)) {
+            if (!jwtProvider.validateToken(token)) {
+                log.error("Token Error");
+            }
+
+            if(token.equals(user.getRefreshToken().substring(7))){
+                String accessToken = jwtProvider.createAccessToken(user.getUsername());
+                String refreshToken = jwtProvider.createRefreshToken(user.getUsername());
+
+                response.addHeader(JwtProvider.AUTHORIZATION_ACCESS_HEADER, accessToken);
+                response.addHeader(JwtProvider.AUTHORIZATION_REFRESH_HEADER, refreshToken);
+
+                // 사용자 개인 필드에 refreshToken 저장
+                saveRefreshToken(refreshToken, user.getId());
+
+            }
+        }
+        return user;
     }
 
     /**
