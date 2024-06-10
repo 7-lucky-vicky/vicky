@@ -1,5 +1,6 @@
 package com.sparta.vicky.user.dto;
 
+import com.sparta.vicky.user.entity.User;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -12,11 +13,11 @@ public class ProfileResponse {
     private String email;
     private String introduce;
 
-
-    public ProfileResponse(String username, String name, String email, String introduce) {
-        this.username = username;
-        this.name = name;
-        this.email = email;
-        this.introduce = introduce;
+    public ProfileResponse(User user) {
+        this.username = user.getUsername();
+        this.name = user.getName();
+        this.email = user.getEmail();
+        this.introduce = user.getIntroduce();
     }
+
 }

@@ -5,8 +5,6 @@ import com.sparta.vicky.security.UserDetailsImpl;
 import com.sparta.vicky.user.dto.*;
 import com.sparta.vicky.user.entity.User;
 import com.sparta.vicky.user.service.UserService;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -48,14 +46,14 @@ public class UserController {
     /**
      * 로그아웃
      */
-    @PatchMapping("/user/logout")
+    @PostMapping("/user/logout")
     public ResponseEntity<CommonResponse<?>> logout(
             @AuthenticationPrincipal UserDetailsImpl userDetails
     ) {
         try {
-            Long response = userService.logout(userDetails.getUser().getId());
+            Long response = userService.logout(userDetails.getUser());
 
-            return getResponseEntity(response, "회원 가입 성공");
+            return getResponseEntity(response, "로그아웃 성공");
 
         } catch (Exception e) {
             return getBadRequestResponseEntity(e);
@@ -71,7 +69,7 @@ public class UserController {
             @AuthenticationPrincipal UserDetailsImpl userDetails
     ) {
         try {
-            Long response = userService.withdraw(request, userDetails.getUser().getId());
+            Long response = userService.withdraw(request, userDetails.getUser());
 
             return getResponseEntity(response, "회원 탈퇴 성공");
 
@@ -81,31 +79,14 @@ public class UserController {
     }
 
     /**
-     * 토큰 재발급
-     */
-    @PostMapping("/user/reissue")
-    public ResponseEntity<CommonResponse<?>> reissue(
-            HttpServletRequest request,
-            HttpServletResponse response,
-            @AuthenticationPrincipal UserDetailsImpl userDetails
-    ) {
-        try {
-            User user = userService.reissue(request, response, userDetails.getUser().getId());
-
-            return getResponseEntity(user, "토큰 재발급 성공");
-
-        } catch (Exception e) {
-            return getBadRequestResponseEntity(e);
-        }
-    }
-
-    /**
      * 프로필 조회
      */
-    @GetMapping("/profile")
-    public ResponseEntity<CommonResponse<?>> getProfile(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+    @GetMapping("/profiles/{userId}")
+    public ResponseEntity<CommonResponse<?>> getProfile(
+            @PathVariable Long userId
+    ) {
         try {
-            ProfileResponse response = userService.getProfile(userDetails.getUser().getId());
+            ProfileResponse response = userService.getProfile(userId);
 
             return getResponseEntity(response, "프로필 조회 성공");
 
@@ -117,13 +98,18 @@ public class UserController {
     /**
      * 프로필 수정
      */
-    @PatchMapping("/profile")
+    @PostMapping("/profiles/{userId}")
     public ResponseEntity<CommonResponse<?>> updateProfile(
-            @Valid @RequestBody UpdateProfileRequest request,
-            @AuthenticationPrincipal UserDetailsImpl userDetails
+            @PathVariable Long userId,
+            @Valid @RequestBody ProfileRequest request,
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            BindingResult bindingResult
     ) {
+        if (bindingResult.hasErrors()) {
+            return getFieldErrorResponseEntity(bindingResult, "프로필 수정 실패");
+        }
         try {
-            ProfileResponse response = userService.updateProfile(request, userDetails.getUser().getId());
+            ProfileResponse response = userService.updateProfile(userId, request, userDetails.getUser());
 
             return getResponseEntity(response, "프로필 수정 성공");
 
@@ -135,13 +121,18 @@ public class UserController {
     /**
      * 비밀번호 수정
      */
-    @PatchMapping("/profile/password")
+    @PatchMapping("/profiles/{userId}")
     public ResponseEntity<CommonResponse<?>> updatePassword(
+            @PathVariable Long userId,
             @Valid @RequestBody UpdatePasswordRequest request,
-            @AuthenticationPrincipal UserDetailsImpl userDetails
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            BindingResult bindingResult
     ) {
+        if (bindingResult.hasErrors()) {
+            return getFieldErrorResponseEntity(bindingResult, "비밀번호 변경 실패");
+        }
         try {
-            ProfileResponse response = userService.updatePassword(request, userDetails.getUser().getId());
+            ProfileResponse response = userService.updatePassword(userId, request, userDetails.getUser());
 
             return getResponseEntity(response, "비빌번호 변경 성공");
 

@@ -1,31 +1,29 @@
 package com.sparta.vicky.user.service;
 
-import com.sparta.vicky.jwt.JwtProvider;
+import com.sparta.vicky.jwt.RefreshTokenRepository;
 import com.sparta.vicky.user.dto.*;
 import com.sparta.vicky.user.entity.User;
 import com.sparta.vicky.user.repository.UserRepository;
-import io.jsonwebtoken.Claims;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final JwtProvider jwtProvider;
+    private final RefreshTokenRepository refreshTokenRepository;
 
     /**
      * 회원 가입
      */
+    @Transactional
     public User signup(SignupRequest request) {
         // 사용자 ID 중복 확인
         if (userRepository.existsByUsername(request.getUsername())) {
@@ -50,11 +48,8 @@ public class UserService {
      * 로그아웃
      */
     @Transactional
-    public Long logout(Long id) {
-        User user = getUser(id);
-        //로그아웃 시 refresh 토큰 삭제
-        user.saveRefreshToken("");
-
+    public Long logout(User user) {
+        deleteRefreshToken(user);
         return user.getId();
     }
 
@@ -62,9 +57,9 @@ public class UserService {
      * 회원 탈퇴
      */
     @Transactional
-    public Long withdraw(WithdrawRequest request, Long userId) {
-        User user = getUser(userId);
+    public Long withdraw(WithdrawRequest request, User user) {
         if (passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            deleteRefreshToken(user);
             user.withdraw();
             return user.getId();
         } else {
@@ -73,74 +68,59 @@ public class UserService {
     }
 
     /**
-     * 토큰 재발급
+     * Refresh 토큰 삭제
      */
     @Transactional
-    public User reissue(HttpServletRequest request, HttpServletResponse response, Long id) {
-        User user = getUser(id);
-        String token  = jwtProvider.getRefreshTokenFromHeader(request);
-
-        if (StringUtils.hasText(token)) {
-            if (!jwtProvider.validateToken(token)) {
-                log.error("Token Error");
-            }
-
-            if(token.equals(user.getRefreshToken().substring(7))){
-                String accessToken = jwtProvider.createAccessToken(user.getUsername());
-                String refreshToken = jwtProvider.createRefreshToken(user.getUsername());
-
-                response.addHeader(JwtProvider.AUTHORIZATION_ACCESS_HEADER, accessToken);
-                response.addHeader(JwtProvider.AUTHORIZATION_REFRESH_HEADER, refreshToken);
-
-                // 사용자 개인 필드에 refreshToken 저장
-                saveRefreshToken(refreshToken, user.getId());
-
-            }
-        }
-        return user;
+    public void deleteRefreshToken(User user) {
+        String username = user.getUsername();
+        refreshTokenRepository.findByUsername(username).ifPresent(refreshTokenRepository::delete);
     }
 
     /**
      * 프로필 조회
      */
     public ProfileResponse getProfile(Long id) {
-        User user = getUser(id);
-
-        return new ProfileResponse(user.getUsername(), user.getName(), user.getEmail(), user.getIntroduce());
+        return new ProfileResponse(getUser(id));
     }
 
     /**
      * 프로필 수정
      */
     @Transactional
-    public ProfileResponse updateProfile( UpdateProfileRequest request, Long id) {
-        User user = getUser(id);
-        user.updateProfile(request.getName(), request.getEmail(), request.getIntroduce());
+    public ProfileResponse updateProfile(Long id, ProfileRequest request, User user) {
+        user.verifyUser(id);
+        user.updateProfile(request);
 
-        return new ProfileResponse(user.getUsername(), user.getName(), user.getEmail(), user.getIntroduce());
+        return new ProfileResponse(user);
     }
 
     /**
      * 비밀번호 수정
      */
-    public ProfileResponse updatePassword(UpdatePasswordRequest request, Long id) {
-        User user = getUser(id);
+    @Transactional
+    public ProfileResponse updatePassword(Long id, UpdatePasswordRequest request, User user) {
+        user.verifyUser(id);
+        validatePassword(request.getOldPassword(), user.getPassword());
+        validateDuplicatePassword(request.getNewPassword(), user.getPassword());
 
-        if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())){
-           throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
-        }
-        user.updatePassword(request.getNewPassword());
+        user.updatePassword(passwordEncoder.encode(request.getNewPassword()));
 
-        return new ProfileResponse(user.getUsername(), user.getName(), user.getEmail(), user.getIntroduce());
+        return new ProfileResponse(user);
     }
 
     /**
-     * refresh 토큰 저장
+     * 비밀번호 검증
      */
-    @Transactional
-    public void saveRefreshToken(String refreshToken, Long userId) {
-        User user = getUser(userId);
-        user.saveRefreshToken(refreshToken);
+    public void validatePassword(String rawPassword, String encodedPassword) {
+        if (!passwordEncoder.matches(rawPassword, encodedPassword)) {
+            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+        }
+    }
+
+    private void validateDuplicatePassword(String newPassword, String currentPassword) {
+        if (passwordEncoder.matches(newPassword, currentPassword)) {
+            throw new IllegalArgumentException("현재 비밀번호와 동일한 비밀번호로 수정할 수 없습니다.");
+        }
     }
 
 }

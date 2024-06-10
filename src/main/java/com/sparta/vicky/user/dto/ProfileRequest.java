@@ -4,7 +4,7 @@ import jakarta.validation.constraints.*;
 import lombok.Getter;
 
 @Getter
-public class UpdateProfileRequest {
+public class ProfileRequest {
 
     @NotBlank(message = "이름을 입력하세요")
     private String name;
@@ -14,6 +14,7 @@ public class UpdateProfileRequest {
             message = "email 형식이 맞지 않습니다.")
     private String email;
 
+    @NotBlank
     private String introduce;
 
 }

@@ -5,6 +5,7 @@ import com.sparta.vicky.board.entity.Board;
 import com.sparta.vicky.comment.entity.Comment;
 import com.sparta.vicky.like.entity.Like;
 import com.sparta.vicky.user.dto.SignupRequest;
+import com.sparta.vicky.user.dto.ProfileRequest;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -55,8 +56,6 @@ public class User extends Timestamped {
     @Column(nullable = false)
     private LocalDateTime statusUpdatedAt;
 
-    private String refreshToken;
-
     /**
      * 생성자
      */
@@ -71,37 +70,36 @@ public class User extends Timestamped {
     }
 
     /**
-     *  RefreshToken 저장 메서드
-     */
-    public void saveRefreshToken(String refreshToken) {
-        this.refreshToken = refreshToken;
-        System.out.println("User.saveRefreshToken");
-        System.out.println("refreshToken = " + refreshToken);
-    }
-
-    /**
-     * 회원 탈퇴 메서드
+     * 회원 탈퇴
      */
     public void withdraw() {
         this.status = UserStatus.WITHDRAWN;
         this.statusUpdatedAt = LocalDateTime.now();
-        System.out.println("User.withdraw");
-        System.out.println("statusUpdatedAt = " + statusUpdatedAt);
     }
 
     /**
      * 프로필 수정
      */
-    public void updateProfile(String name, String email, String introduce) {
-        this.name = name;
-        this.email = email;
-        this.introduce = introduce;
+    public void updateProfile(ProfileRequest request) {
+        this.name = request.getName();
+        this.email = request.getEmail();
+        this.introduce = request.getIntroduce();
     }
 
     /**
      * 비밀번호 수정
      */
-    public void updatePassword(String newPassword) {
-        this.password = newPassword;
+    public void updatePassword(String encodedNewPassword) {
+        this.password = encodedNewPassword;
     }
+
+    /**
+     * 검증 메서드
+     */
+    public void verifyUser(Long id) {
+        if (!this.id.equals(id)) {
+            throw new IllegalArgumentException("User with id " + id + " does not belong to user with id " + this.id);
+        }
+    }
+
 }
