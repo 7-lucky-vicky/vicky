@@ -89,4 +89,19 @@ public class User extends Timestamped {
         System.out.println("statusUpdatedAt = " + statusUpdatedAt);
     }
 
+    /**
+     * 프로필 수정
+     */
+    public void updateProfile(String name, String email, String introduce) {
+        this.name = name;
+        this.email = email;
+        this.introduce = introduce;
+    }
+
+    /**
+     * 비밀번호 수정
+     */
+    public void updatePassword(String newPassword) {
+        this.password = newPassword;
+    }
 }
