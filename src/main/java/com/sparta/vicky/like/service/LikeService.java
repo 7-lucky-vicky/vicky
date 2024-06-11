@@ -14,6 +14,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -32,8 +34,9 @@ public class LikeService {
         ContentType contentType = request.getContentType();
         Long contentId = request.getContentId();
 
-        Like like = likeRepository.findByContentTypeAndContentId(contentType, contentId)
-                .orElse(createLike(request, user));
+        Optional<Like> existLike = likeRepository.findByContentTypeAndContentId(contentType, contentId);
+
+        Like like = existLike.orElseGet(() -> createLike(request, user));
 
         if (like.getStatus().equals(LikeStatus.CANCELED)) {
             doLike(like, user.getId()); // 취소된 좋아요이거나 신규 좋아요인 경우 좋아요
@@ -41,6 +44,7 @@ public class LikeService {
             cancelLike(like, user.getId()); // 이미 좋아요 상태인 경우 좋아요 취소
         }
 
+        log.info("좋아요 토글 완료");
         return like;
     }
 
