@@ -118,7 +118,7 @@ public class BoardController {
     /**
      * 게시물 삭제
      */
-    @DeleteMapping("/boards/{boardId}")
+    @DeleteMapping("/{boardId}")
     public ResponseEntity<CommonResponse<?>> deleteBoard(
             @PathVariable Long boardId,
             @AuthenticationPrincipal UserDetailsImpl userDetails

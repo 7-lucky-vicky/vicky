@@ -40,35 +40,17 @@ public class Comment {
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
+
     /**
      * 생성자
      */
-    public static Comment createComment(CommentRequest request, Board board, User user) {
-        Comment comment = new Comment(request.getContent());
-        comment.setBoard(board);
-        comment.setUser(user);
-
-        return comment;
-    }
-
-    private Comment(String content) {
-        this.content = content;
-        this.likeCount = 0;
+    public Comment(CommentRequest request, Board board, User user) {
+        this.content = request.getContent();
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
-    }
-
-    /**
-     * 연관관계 편의 메서드
-     */
-    public void setUser(User user) {
-        this.user = user;
-        user.getComments().add(this);
-    }
-
-    public void setBoard(Board board) {
+        this.likeCount = 0;
         this.board = board;
-        board.getComments().add(this);
+        this.user = user;
     }
 
     /**

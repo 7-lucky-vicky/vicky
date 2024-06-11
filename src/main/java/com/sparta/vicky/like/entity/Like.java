@@ -37,45 +37,31 @@ public class Like extends Timestamped {
     /**
      * 생성자
      */
-    public static Like createLike(LikeRequest request, User user) {
-        Like like = new Like(request);
-        like.setUser(user);
-
-        return like;
-    }
-
-    private Like(LikeRequest request) {
+    public Like(LikeRequest request, User user) {
         this.contentType = request.getContentType();
         this.contentId = request.getContentId();
         this.status = LikeStatus.CANCELED; // 좋아요 로직 수행 전에는 취소 상태
-    }
-
-    /**
-     * 연관관계 편의 메서드
-     */
-    public void setUser(User user) {
         this.user = user;
-        user.getLikes().add(this);
     }
 
     /**
      * 좋아요 토글 메서드
      */
-    public void doLike(User user) {
-        this.verifyUser(user);
+    public void doLike(Long userId) {
+        this.verifyUser(userId);
         this.status = LikeStatus.LIKED;
     }
 
-    public void cancelLike(User user) {
-        this.verifyUser(user);
+    public void cancelLike(Long userId) {
+        this.verifyUser(userId);
         this.status = LikeStatus.CANCELED;
     }
 
     /**
      * 사용자 검증 메서드
      */
-    public void verifyUser(User user) {
-        if (!this.user.equals(user)) {
+    public void verifyUser(Long userId) {
+        if (!userId.equals(this.user.getId())) {
             throw new IllegalArgumentException("사용자가 해당 좋아요의 주인이 아닙니다.");
         }
     }

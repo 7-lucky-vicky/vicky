@@ -26,7 +26,7 @@ public class CommentService {
     @Transactional
     public Comment createComment(CommentRequest request, User user) {
         Board board = boardService.getBoard(request.getBoardId());
-        Comment comment = Comment.createComment(request, board, user);
+        Comment comment = new Comment(request, board, user);
 
         return commentRepository.save(comment);
     }

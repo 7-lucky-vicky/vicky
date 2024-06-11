@@ -65,14 +65,6 @@ public class Board {
     }
 
     /**
-     * 연관관계 편의 메서드
-     */
-    public void setUser(User user) {
-        this.user = user;
-        user.getBoards().add(this);
-    }
-
-    /**
      * 검증 메서드
      */
     public void verifyUser(Long userId) {
