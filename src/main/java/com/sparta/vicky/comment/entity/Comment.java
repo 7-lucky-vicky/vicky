@@ -80,9 +80,9 @@ public class Comment {
         }
     }
 
-    public void verifyUser(User user) {
-        if (!this.user.equals(user)) {
-            throw new IllegalArgumentException("해당 댓글의 작성자가 아닙니다.");
+    public void verifyUser(Long userId) {
+        if (!this.user.getId().equals(userId)) {
+            throw new IllegalArgumentException("해당 게시물의 작성자가 아닙니다.");
         }
     }
 

@@ -59,7 +59,7 @@ public class CommentService {
     @Transactional
     public Comment updateComment(Long boardId, Long commentId, CommentRequest request, User user) {
         Comment comment = getComment(boardId, commentId);
-        comment.verifyUser(user);
+        comment.verifyUser(user.getId());
         comment.update(request);
 
         return comment;
@@ -71,7 +71,7 @@ public class CommentService {
     @Transactional
     public Long deleteComment(Long boardId, Long commentId, User user) {
         Comment comment = getComment(boardId, commentId);
-        comment.verifyUser(user);
+        comment.verifyUser(user.getId());
         commentRepository.delete(comment);
 
         return commentId;

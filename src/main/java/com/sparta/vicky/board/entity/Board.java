@@ -75,9 +75,10 @@ public class Board {
     /**
      * 검증 메서드
      */
-    public void verifyUser(User user) {
-        if (!this.user.equals(user))
+    public void verifyUser(Long userId) {
+        if (!this.user.getId().equals(userId)) {
             throw new IllegalArgumentException("해당 게시물의 작성자가 아닙니다.");
+        }
     }
 
     /**

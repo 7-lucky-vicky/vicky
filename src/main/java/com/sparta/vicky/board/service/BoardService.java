@@ -7,6 +7,8 @@ import com.sparta.vicky.user.entity.User;
 import com.sparta.vicky.user.entity.UserStatus;
 import com.sparta.vicky.user.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -17,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class BoardService {
 
+    private static final Logger log = LoggerFactory.getLogger(BoardService.class);
     private final BoardRepository boardRepository;
     private final UserService userService;
 
@@ -58,7 +61,7 @@ public class BoardService {
     @Transactional
     public Board updateBoard(Long boardId, BoardRequest request, User user) {
         Board board = getBoard(boardId);
-        board.verifyUser(user);
+        board.verifyUser(user.getId());
         board.update(request);
 
         return board;
@@ -70,7 +73,7 @@ public class BoardService {
     @Transactional
     public Long deleteBoard(Long boardId, User user) {
         Board board = getBoard(boardId);
-        board.verifyUser(user);
+        board.verifyUser(user.getId());
         boardRepository.delete(board);
 
         return boardId;
