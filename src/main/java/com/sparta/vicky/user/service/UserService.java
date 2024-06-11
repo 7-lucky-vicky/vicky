@@ -57,7 +57,8 @@ public class UserService {
      * 회원 탈퇴
      */
     @Transactional
-    public Long withdraw(WithdrawRequest request, User user) {
+    public Long withdraw(WithdrawRequest request, Long id) {
+        User user = getUser(id);
         if (passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             deleteRefreshToken(user);
             user.withdraw();
@@ -87,7 +88,8 @@ public class UserService {
      * 프로필 수정
      */
     @Transactional
-    public ProfileResponse updateProfile(Long id, ProfileRequest request, User user) {
+    public ProfileResponse updateProfile(Long id, ProfileRequest request) {
+        User user = getUser(id);
         user.verifyUser(id);
         user.updateProfile(request);
 
@@ -98,7 +100,8 @@ public class UserService {
      * 비밀번호 수정
      */
     @Transactional
-    public ProfileResponse updatePassword(Long id, UpdatePasswordRequest request, User user) {
+    public ProfileResponse updatePassword(Long id, UpdatePasswordRequest request) {
+        User user = getUser(id);
         user.verifyUser(id);
         validatePassword(request.getOldPassword(), user.getPassword());
         validateDuplicatePassword(request.getNewPassword(), user.getPassword());

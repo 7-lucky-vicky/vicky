@@ -12,6 +12,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Objects;
+
 import static com.sparta.vicky.util.ControllerUtil.*;
 
 @RestController
@@ -69,7 +71,7 @@ public class UserController {
             @AuthenticationPrincipal UserDetailsImpl userDetails
     ) {
         try {
-            Long response = userService.withdraw(request, userDetails.getUser());
+            Long response = userService.withdraw(request, userDetails.getUser().getId());
 
             return getResponseEntity(response, "회원 탈퇴 성공");
 
@@ -109,7 +111,9 @@ public class UserController {
             return getFieldErrorResponseEntity(bindingResult, "프로필 수정 실패");
         }
         try {
-            ProfileResponse response = userService.updateProfile(userId, request, userDetails.getUser());
+            validateUser(userId, userDetails);
+
+            ProfileResponse response = userService.updateProfile(userId, request);
 
             return getResponseEntity(response, "프로필 수정 성공");
 
@@ -132,12 +136,20 @@ public class UserController {
             return getFieldErrorResponseEntity(bindingResult, "비밀번호 변경 실패");
         }
         try {
-            ProfileResponse response = userService.updatePassword(userId, request, userDetails.getUser());
+            validateUser(userId, userDetails);
+
+            ProfileResponse response = userService.updatePassword(userId, request);
 
             return getResponseEntity(response, "비빌번호 변경 성공");
 
         } catch (Exception e) {
             return getBadRequestResponseEntity(e);
+        }
+    }
+
+    private static void validateUser(Long userId, UserDetailsImpl userDetails) {
+        if (!Objects.equals(userId, userDetails.getUser().getId())) {
+            throw new IllegalArgumentException("userId " + userId + " 에 해당하는 사용자가 아닙니다.");
         }
     }
 
