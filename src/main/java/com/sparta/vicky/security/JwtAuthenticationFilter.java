@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sparta.vicky.jwt.JwtProvider;
 import com.sparta.vicky.jwt.RefreshTokenService;
 import com.sparta.vicky.user.dto.LoginRequest;
+import com.sparta.vicky.user.entity.UserStatus;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -18,8 +19,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import java.io.IOException;
 
-import static jakarta.servlet.http.HttpServletResponse.SC_OK;
-import static jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
+import static jakarta.servlet.http.HttpServletResponse.*;
 
 @Slf4j
 public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
@@ -62,7 +62,27 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
      */
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException {
-        String username = ((UserDetailsImpl) authResult.getPrincipal()).getUsername();
+        UserDetailsImpl userDetails = (UserDetailsImpl) authResult.getPrincipal();
+        UserStatus status = userDetails.getUser().getStatus();
+
+        if (status == UserStatus.WITHDRAWN) {
+            log.error("이미 탈퇴한 사용자입니다.");
+
+            // 응답 메시지 작성
+            response.setStatus(SC_FORBIDDEN);
+            response.setCharacterEncoding("UTF-8");
+            response.setContentType("application/json");
+
+            // JSON 응답 생성
+            String jsonResponse = new ObjectMapper().writeValueAsString(
+                    new ApiResponse(SC_FORBIDDEN, "이미 탈퇴한 사용자입니다.", null, null)
+            );
+
+            response.getWriter().write(jsonResponse);
+            return;
+        }
+
+        String username = userDetails.getUsername();
 
         String accessToken = jwtProvider.createAccessToken(username);
         String refreshToken = jwtProvider.createRefreshToken(username);
