@@ -3,6 +3,7 @@ package com.sparta.vicky.user.service;
 import com.sparta.vicky.jwt.RefreshTokenRepository;
 import com.sparta.vicky.user.dto.*;
 import com.sparta.vicky.user.entity.User;
+import com.sparta.vicky.user.entity.UserStatus;
 import com.sparta.vicky.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -59,6 +60,9 @@ public class UserService {
     @Transactional
     public Long withdraw(WithdrawRequest request, Long id) {
         User user = getUser(id);
+        if (user.getStatus() == UserStatus.WITHDRAWN) {
+            throw new IllegalArgumentException("이미 탈퇴한 사용자입니다.");
+        }
         if (passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             deleteRefreshToken(user);
             user.withdraw();
