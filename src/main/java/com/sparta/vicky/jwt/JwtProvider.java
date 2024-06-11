@@ -146,8 +146,6 @@ public class JwtProvider {
     public boolean validateRefreshToken(String token) {
         log.info("Refresh 토큰 검증");
         String username = getUsernameFromToken(token);
-        log.info("username = {}", username);
-
         return refreshTokenService.findByUsername(username).isPresent();
     }
 

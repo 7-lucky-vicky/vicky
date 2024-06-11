@@ -57,6 +57,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
                 }
                 // 리프레시 토큰 만료 or 검증 실패
                 else {
+                    log.info("리프레시 토큰 검증 실패");
                     jwtExceptionHandler(response, "유효하지 않은 Refresh 토큰입니다.", HttpStatus.UNAUTHORIZED);
                     return;
                 }
